@@ -1,0 +1,13 @@
+1.怎加了module: SUExcel
+2.删除了全部$号全局变量
+	$dataManager ->  SUExcel.data_manger
+	$data ->  SUExcel.data
+	$color -> SUExcel.colors
+	$excel -> SUExcel.excel
+
+3.DataManager.readText() 改为-> SUExcel.read_color_profile()
+4. 使用style guide重命名：https://github.com/rubocop-hq/ruby-style-guide#naming
+	学习java标准private function 名字前加下划线，譬如 SUExcel._first_time_connect 实为内部调用私有函数。
+	公共函数全部写说明
+	不准有行尾注释！
+

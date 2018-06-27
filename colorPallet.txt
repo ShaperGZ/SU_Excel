@@ -1,0 +1,6 @@
+retail:236,202,66
+dining:238,158,109
+public:206,223,173
+office:187,207,226
+officelobby:138,188,231
+apartment:210,189,216
