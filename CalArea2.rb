@@ -1,6 +1,6 @@
 #英寸转米 系数
-$convertion=39.3700787
-$convertionSQ=1550.0031
+$m2inch=39.3700787
+$m2inchsq=1550.0031
 
 $genName="SCRIPTGENERATEDOBJECTS"
 def hideSGO()
@@ -32,13 +32,8 @@ def setArea(newArea,axis=0)
   entity.transform! tr
 end
 
-def satisfy(name)
-  if (name.include? "_") and (name.split('_').size > 3)
-    return true
-  else
-    return false
-  end
-end
+
+
 
 class InstCalAreaAction < Sketchup::InstanceObserver
   def initialize(updater)
@@ -47,21 +42,23 @@ class InstCalAreaAction < Sketchup::InstanceObserver
   def onOpen(instance)
   end
   def onClose(instance)
-   @updater.invalidate(instance)
-   $dataManager.onChangeEntity(instance) if satisfy(instance.name)
+    @updater.constrain_all()
+    @updater.invalidate()
+    SUExcel.data_manager.onChangeEntity(instance)
+
   end
 end
 
-class InitialSend
-  def sendEntity(entity)
-    puts "名字：#{entity.name}"
-    puts "ID:#{entity.guid}"
-    if satisfy(entity.name) and entity.entities.size != nil
-      ftfh = entity.name.split('_')[3].to_f   #提取层高
-      entity.set_attribute("BuildingBlock","ftfh",ftfh)
-      $dataManager.onChangeEntity(entity)
-      puts "发送完成"
-    end
+class EntsCalAreaAction < Sketchup::EntitiesObserver
+  def initialize(updater)
+    @updater=updater
+  end
+  def onElementAdded(entities, entity)
+    #puts "onElementAdded: #{entity}"
+  end
+  def onElementModified(entities, entity)
+    #puts "onElementModified: #{entity}"
+    #@updater.constrain_one_faceZ(entity) if entity.class==Sketchup::Face and entity.normal.z==1
   end
 end
 
@@ -72,32 +69,61 @@ class GrpCalAreaAction < Sketchup::EntityObserver
 
   def onEraseEntity(entity)
     @updater.removeCuts()
-    $dataManager.onDelete(entity)
-    $dataManager.update_data_note()
+    SUExcel.data_manager.onDelete(entity)
+    SUExcel.update_data_note()
   end
 
   def onChangeEntity(entity)
-    if satisfy(entity.name) and entity.entities.size != nil
+    if entity.entities.size != nil
       ftfh = entity.name.split('_')[3].to_f   #提取层高
       entity.set_attribute("BuildingBlock","ftfh",ftfh)
-      @updater.invalidate(entity)
-      $dataManager.onChangeEntity(entity)
+      @updater.invalidate()
+      SUExcel.data_manager.onChangeEntity(entity)
     end
   end
 end
 
-class AreaUpdater 
-  def initialize(group)
-    #@host=group
-    @cuts=nil
-    group.set_attribute("BuildingBlock","ftfh",group.name.split('_')[3].to_f)
-    group.add_observer(InstCalAreaAction.new(self))
-    group.add_observer(GrpCalAreaAction.new(self))
-    invalidate(group) if satisfy(group.name)
+class AreaUpdater
+  @@created_objects=Hash.new
+  def self.created_objects
+    @@created_objects
   end
 
-  def invalidate(entity)
-    $enableOnEntityAdded=false
+  def self.include? (guid)
+    return @@created_objects.keys?(guid)
+  end
+
+  #create a new AreaUp if not already created
+  # invalidate if exist
+  def self.create_or_invalidate(g)
+    if @@created_objects.key?(g.guid)
+      @@created_objects[g.guid].invalidate
+    else
+      AreaUpdater.new(e)
+    end
+  end
+
+  def initialize(group)
+    @gp=group
+    if @@created_objects.key?(group.guid) ==false
+      attrdicts = group.attribute_dictionaries
+      begin
+        group.get_attribute("BuildingBlock","ftfh")
+      rescue Exception
+        group.set_attribute("BuildingBlock","ftfh",group.name.split('_')[3].to_f)
+      end
+      group.add_observer(InstCalAreaAction.new(self))
+      group.add_observer(GrpCalAreaAction.new(self))
+      #group.entities.add_observer(EntsCalAreaAction.new(self))
+      @@created_objects[group.guid]=self
+    end
+
+    invalidate()
+  end
+
+  def invalidate()
+    entity=@gp
+    p "invalidateing #{entity}"
     removeCuts()
     ftfh=entity.get_attribute("BuildingBlock","ftfh")
     floors = cutFloor(entity,ftfh)
@@ -109,7 +135,6 @@ class AreaUpdater
     @cuts.name=$genName
     ttArea=calAreas()
     entity.set_attribute("BuildingBlock","area",ttArea)
-    $enableOnEntityAdded = true
   end
 
   # subject:组
@@ -125,7 +150,7 @@ class AreaUpdater
     subjectBound=subject.bounds
     subjectH = (subjectBound.max.z - subjectBound.min.z) 
     #p "(", subjectH
-    subjectH =  subjectH / $convertion 
+    subjectH =  subjectH / $m2inch
     #p subjectH, ")"
 
     flrCount = (subjectH / ftfh).floor
@@ -139,12 +164,12 @@ class AreaUpdater
       ]
 
     for i in 0..flrCount
-      if basePts[0].z<subjectBound.max.z and (basePts[0].z+(1* $convertion))<subjectBound.max.z
+      if basePts[0].z<subjectBound.max.z and (basePts[0].z+(1* $m2inch))<subjectBound.max.z
         f=cutter.entities.add_face(basePts)
         #sketchup 会把在0高度的面自动向下，所以要反过来
         f.reverse! if basePts[0].z==0
-        ext=f.pushpull(foffset* $convertion)
-        basePts.each{|p| p.z=p.z+(ftfh * $convertion )}
+        ext=f.pushpull(foffset* $m2inch)
+        basePts.each{|p| p.z=p.z+(ftfh * $m2inch)}
       end
     end
 
@@ -165,14 +190,40 @@ class AreaUpdater
   def calAreas()
     ttArea=0
     @cuts.entities.each{|e| ttArea += e.area if e.class == Sketchup::Face and e.normal.z==1 }
-    ttArea = ttArea / $convertionSQ
+    ttArea = ttArea / $m2inchsq
     return ttArea
   end
 
   def removeCuts()
-    return if @cuts == nil
+    return if @cuts == nil or @cuts.deleted?
     @cuts.locked=false
     @cuts.erase!
+  end
+
+  def constrain_one_faceZ(f)
+    base_z=@gp.transformation.origin.z
+    step=@gp.get_attribute("BuildingBlock","ftfh")
+    return if step==nil
+    step*=$m2inch
+    vpos=f.vertices[0].position
+    length=vpos.z - base_z
+    remain = length%step
+    half = step / 2
+    if remain>=half
+      offset=step-remain
+    else
+      offset=-remain
+    end
+    f.pushpull(offset)
+  end
+
+  def constrain_all()
+    tops=[]
+    p 'constrain all'
+    @gp.entities.each{|e| tops<<e if e.class==Sketchup::Face and e.normal.z==1}
+    tops.each {|e|
+      p e
+      constrain_one_faceZ(e) }
   end
 end
 

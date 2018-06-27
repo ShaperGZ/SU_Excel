@@ -38,21 +38,41 @@ end
 module SUExcel
   #本项目不再使用$号的全局变量
   #这些事本项目的全局变量，已SUExcel.dataManager读写
-  @@data_manager
-  @@data
-  @@colors
-  @@excel
-  @@is_first_time_connect
-  @@note
+
+  @@data_manager=nil
+  @@data=nil
+  @@colors=nil
+  @@excel=nil
+  @@is_first_time_connect=true
+  @@note=nil
+  def self.data_manager
+    @@data_manager
+  end
+  def self.data
+    return @@data_manager.class.data if @@data_manager.class.data!=nil
+    return nil
+  end
+  def self.data_manger=(val)
+    @@data_manager=val
+  end
+  def self.excel
+    @@excel
+  end
+  def self.excel=(val)
+    @@excel=val
+  end
+  def self.colors
+    @@colors
+  end
 
   #与excel链接并更新全部数据
   # 如果已经连接，更新全部数据
   # 该方法用于UI，被用户调用
   def self.connect_to_excel
-    self._first_time_connect() if self.is_first_time_connect
-    self._clear_deleted()
-    self._batch_data()
-    self.data_manager.update_data_note()
+    self._first_time_connect() if @@is_first_time_connect
+    self.clear_script_generated_objs()
+    self.batch_add_observers()
+    self.update_data_note if @@data_manager!=nil
   end
 
   # 把选定物体加入到数据管理
@@ -61,11 +81,17 @@ module SUExcel
   # 缺点是用户需要之后自己修改名字更正zone, t#,和层高ftfh
   # 该方法用于UI，被用户调用
   def self.set_building
+
+    if @@data_manager==nil
+      self._first_time_connect
+    end
+
     prompts = ["color"]
     defaults = ["retail"]
     str = ""
-    self.colors.keys.each{|key|
-      if key != self.colors.keys[self.colors.keys.size-1]
+    self.read_color_profile if @@colors == nil
+    @@colors.keys.each{|key|
+      if key != @@colors.keys[@@colors.keys.size-1]
         str += key.to_s+"|"
       else
         str += key.to_s
@@ -74,42 +100,68 @@ module SUExcel
     list = [str]
     input = UI.inputbox(prompts, defaults, list, "Information")
 
-    selections = Sketchup.active_model.selection
-    GroupCount = 0
+    sel = Sketchup.active_model.selection
+    selected_groups=[]
+    sel.each{|e| selected_groups<<e if e.class == Sketchup::Group}
 
-    selections.each{|selection|
-      if selection.typename == "Group"
-        GroupCount += 1
-        colorKey = input[0]
-        selection.entities.each {|ent|
-          if  ent.typename == "Face"
-            if self.colors.key?(colorKey)
-              ent.material = Sketchup::Color.new(self.colors[colorKey][0].to_i, self.colors[colorKey][1].to_i, self.colors[colorKey][2].to_i)
-              building_type=colorKey
-              name="zone1_t1_#{building_type}_3"
-              entity.name=name
-              entity.set_attribute("BuildingBlock","ftfh",3)
-            end
-          end
-        }
-      end
-    }
-
-    if  @GroupCount == 0 || selections.empty?
+    group_count = selected_groups.size
+    if  group_count == 0 || sel.empty?
       UI.messagebox("未选择任何组！")
+      return
     end
+
+
+    p "selected count =#{selected_groups.size}"
+    # two actions: 01 assign color, 02 assign name
+    selected_groups.each{|group|
+      # 01 assign color
+      color=@@colors[input[0]]
+      color=Sketchup::Color.new(color[0].to_i, color[1].to_i, color[2].to_i)
+      group.entities.each {|ent|
+        ent.material = color if color!=nil and ent.class == Sketchup::Face
+      }
+      # 02 assign name
+      building_type=input[0]
+      name="zone1_t1_#{building_type}_3"
+      p "name=#{name}"
+      group.name=name
+      group.set_attribute("BuildingBlock","ftfh",3)
+      AreaUpdater.new(group)
+      @@data_manager.updateData(group)
+    }
   end
 
   def self._first_time_connect
-    Sketchup.active_model.entities.add_observer(NewEntityObserver.new)
-    #Sketchup.add_observer(MyAppObserver.new)
-    self.excel.connectExcel()
-    self.is_first_time_connect = false
-
+    self.read_color_profile()
+    @@excel = SUExcel::ExcelConnector.new
+    @@data_manager=SUExcel::DataManager.new(SUExcel.excel)
+    @@excel.connectExcel()
+    @@is_first_time_connect = false
   end
 
-  def self._read_color_profile()
-    self.colors = Hash.new    #颜色字典
+  def self.update_data_note()
+    return if @@note==nil
+    #把@@data各行变成一个单一string 变量，赋予 $note.text
+    text = ""
+    data=@@data_manager.data
+    data.keys.each{|key|
+      area = data[key][4]
+      if area != nil
+        a = sprintf("%.2f",data[key][4]).to_s
+      else
+        a = ""
+      end
+      text += key[0,4]
+      4.times{|i| text += ","+data[key][0].to_s}
+      text +=", area:" + a + "\n"
+    }
+    @@note=Sketchup.active_model.add_note("",0.05,0.05) if @@note==nil or @@note.deleted?
+    @@note.text=text
+  end
+
+  def self.read_color_profile()
+    #颜色字典
+    @@colors = Hash.new
     path = File.dirname(__FILE__)  #当前脚本所在目录。文本文档应与脚本在同一目录
     aFile = File.open(path+"/colorPallet.txt","r").read   #逐行读取文本
     aFile.gsub!(/\r\n?/, "\n")
@@ -117,7 +169,7 @@ module SUExcel
       info = line.split(':')
       id = info[0]
       nums = info[1].split(',')
-      self.colors[id] = nums
+      @@colors[id] = nums
     end
   end
 
@@ -130,9 +182,9 @@ module SUExcel
   end
 
   def self.batch_add_observers()
-    @@data.clear if @@data != nil
-    @@excel.clearExcel()
-    isSendExcel = false
+    @@data_manager.clearData if @@data_manager != nil
+    #@@excel.clearExcel()
+    @@data_manager.enable_send_to_excel =false
     entites = Sketchup.active_model.entities
 
     #要先把现有的entities提取出来，如果直接拿Sketchup.active_model.entities来遍历
@@ -141,29 +193,31 @@ module SUExcel
     entites.each {|e| ents<<e}
     ents.each {|e|
       if e.typename == "Group" and self.satisfy_name(e.name)
-        AreaUpdater.new(e)
+        AreaUpdater.create_or_invalidate(e)
         self.data_manager.updateData(e)
-
-
       end
     }
-
+    @@data_manager.enable_send_to_excel =true
+    @@data_manager.updateToExcel()
   end
 
-  def self.clear_deleted()
+  def self.clear_script_generated_objs()
+
+    counter=0
+    tbd=[]
     Sketchup.active_model.entities.each{|entity|
       if entity.typename == "Group" and entity.name == "SCRIPTGENERATEDOBJECTS"
-         puts "删除该组：#{entity.name}"
+        tbd<<entity
       end
     }
+    #p "clearing all script generated objects count=#{tbd.size}"
+    tbd.each{|e| e.erase!}
   end
 
 end
 
 
-@@excel=ExcelConnector.new
-@@data_manager=DataManager.new(@@excel)
-@@data_manager.readText()#读取文本文档
+
 
 
 
