@@ -42,7 +42,7 @@ class InstCalAreaAction < Sketchup::InstanceObserver
   def onOpen(instance)
   end
   def onClose(instance)
-    @updater.constrain_all()
+    #@updater.constrain_all()
     @updater.invalidate()
     SUExcel.data_manager.onChangeEntity(instance)
 
@@ -74,16 +74,22 @@ class GrpCalAreaAction < Sketchup::EntityObserver
   end
 
   def onChangeEntity(entity)
-    if entity.entities.size != nil
-      ftfh = entity.name.split('_')[3].to_f   #提取层高
-      entity.set_attribute("BuildingBlock","ftfh",ftfh)
-      @updater.invalidate()
-      SUExcel.data_manager.onChangeEntity(entity)
-    end
+	begin
+		if entity.entities.size != nil
+		  ftfh = entity.name.split('_')[3].to_f   #提取层高
+		  entity.set_attribute("BuildingBlock","ftfh",ftfh)
+		  @updater.invalidate()
+		  SUExcel.data_manager.onChangeEntity(entity)
+		end
+	rescue Exception
+		p "Exception, To be discovered"
+	end
+	
   end
 end
 
 class AreaUpdater
+  attr_accessor :gp
   @@created_objects=Hash.new
   def self.created_objects
     @@created_objects
@@ -99,8 +105,16 @@ class AreaUpdater
     if @@created_objects.key?(g.guid)
       @@created_objects[g.guid].invalidate
     else
-      AreaUpdater.new(e)
+      AreaUpdater.new(g)
     end
+  end
+  
+  def self.remove_deleted()
+    hs=@@created_objects
+    hs.keys.each{|k| 
+	  gp=hs[k].gp
+	  hs.delete(k) if gp==nil or gp.deleted?
+	  }
   end
 
   def initialize(group)
@@ -122,6 +136,7 @@ class AreaUpdater
   end
 
   def invalidate()
+	constrain_all()
     entity=@gp
     p "invalidateing #{entity}"
     removeCuts()
@@ -200,31 +215,50 @@ class AreaUpdater
     @cuts.erase!
   end
 
-  def constrain_one_faceZ(f)
-    base_z=@gp.transformation.origin.z
+  def constrain_one_faceZ(f) 
+    base_z=@gp.bounds.min.z
+	return if f.vertices[0].position.z<=0
+	#return if f.normal.z == -1 and f.vertices[0].position.z <= base_z
+	zscale=@gp.transformation.to_a[10]
     step=@gp.get_attribute("BuildingBlock","ftfh")
+	step /= zscale
     return if step==nil
     step*=$m2inch
     vpos=f.vertices[0].position
-    length=vpos.z - base_z
-    remain = length%step
+    
+	#length=vpos.z - base_z
+	#this length times group scale factor
+	#length*=@gp.transformation.to_a[10]
+	
+	length=vpos.z
+    remain = length % step
+	
     half = step / 2
     if remain>=half
       offset=step-remain
     else
       offset=-remain
     end
+	
+	offset *= f.normal.z
+	#offset= step - offset if f.normal.z == -1
+	
+	p "face.z=#{vpos.z / $m2inch},length=#{length / $m2inch}, remain=#{remain / $m2inch}, offset=#{offset / $m2inch}"
     f.pushpull(offset)
   end
 
   def constrain_all()
+	
     tops=[]
     p 'constrain all'
-    @gp.entities.each{|e| tops<<e if e.class==Sketchup::Face and e.normal.z==1}
+    @gp.entities.each{|e| tops<<e if e.class==Sketchup::Face and e.normal.z.abs==1
+	}
     tops.each {|e|
       p e
       constrain_one_faceZ(e) }
   end
+  
+  
 end
 
 

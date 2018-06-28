@@ -45,6 +45,8 @@ module SUExcel
   @@excel=nil
   @@is_first_time_connect=true
   @@note=nil
+  
+  @@last_user_input=["zone1","retail","t1","3"]
   def self.data_manager
     @@data_manager
   end
@@ -86,20 +88,27 @@ module SUExcel
       self._first_time_connect
     end
 
-    prompts = ["color"]
-    defaults = ["retail"]
-    str = ""
+    prompts = ["分区","业态","栋","层高"]
+    defaults = @@last_user_input
+    types = ""
     self.read_color_profile if @@colors == nil
-    @@colors.keys.each{|key|
-      if key != @@colors.keys[@@colors.keys.size-1]
-        str += key.to_s+"|"
-      else
-        str += key.to_s
-      end
-    }
-    list = [str]
-    input = UI.inputbox(prompts, defaults, list, "Information")
-
+    @@colors.keys.each{|key| 
+		types +="|" if types!=""
+		types+=key.to_s
+	}
+	
+	# 设定菜单内容
+	zones=""
+	towers=""
+	ftfh=""
+    list = [zones,types,towers,ftfh]
+	
+	defaults=@@last_user_input
+	
+    input = UI.inputbox(prompts, defaults, list, "Set Building")
+	return if input == nil or input == false
+	
+	@@last_user_input = input
     sel = Sketchup.active_model.selection
     selected_groups=[]
     sel.each{|e| selected_groups<<e if e.class == Sketchup::Group}
@@ -115,18 +124,19 @@ module SUExcel
     # two actions: 01 assign color, 02 assign name
     selected_groups.each{|group|
       # 01 assign color
-      color=@@colors[input[0]]
+      color=@@colors[input[1]]
       color=Sketchup::Color.new(color[0].to_i, color[1].to_i, color[2].to_i)
       group.entities.each {|ent|
         ent.material = color if color!=nil and ent.class == Sketchup::Face
       }
       # 02 assign name
-      building_type=input[0]
-      name="zone1_t1_#{building_type}_3"
+      building_type=input[1]
+      name="#{input[0]}_#{input[1]}_#{input[2]}_#{input[3]}"
       p "name=#{name}"
       group.name=name
-      group.set_attribute("BuildingBlock","ftfh",3)
-      AreaUpdater.new(group)
+      group.set_attribute("BuildingBlock","ftfh",input[3].to_f)
+	  AreaUpdater.create_or_invalidate(group)
+      #AreaUpdater.new(group)
       @@data_manager.updateData(group)
     }
   end
@@ -187,6 +197,10 @@ module SUExcel
     @@data_manager.enable_send_to_excel =false
     entites = Sketchup.active_model.entities
 
+	#清空非法数据
+	#通常打开新文件时，原来的数据会留在记录里成为非法数据
+	AreaUpdater.remove_deleted()
+	
     #要先把现有的entities提取出来，如果直接拿Sketchup.active_model.entities来遍历
     # 会把过程中新建的entity也遍历
     ents=[]

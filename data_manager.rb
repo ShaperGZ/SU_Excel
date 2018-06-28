@@ -29,6 +29,16 @@ module SUExcel
       SUExcel.update_data_note()
     end
 
+	def updateBaseArea()
+		base_area_by_t=Hash.new
+		@@data.each{|e|
+			val=e[1]
+			t=val[1]
+			base_area=val[5]
+			base_area_by_t[t]=val
+		}
+	end
+	
     def updateToExcel()
       #p "updating data to excel, data:"
       #p @@data
@@ -37,6 +47,8 @@ module SUExcel
 
     def analyzeEntity(entity)
       block_info = entity.name.split('_')
+	  bounds=entity.bounds
+	  #block_info<<bounds.min.z
       colorKey = block_info[2]
       colorize(entity, colorKey)
       return block_info
