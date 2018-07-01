@@ -95,20 +95,20 @@ module SUExcel
     @@colors.keys.each{|key| 
 		types +="|" if types!=""
 		types+=key.to_s
-	}
-	
-	# 设定菜单内容
-	zones=""
-	towers=""
-	ftfh=""
-    list = [zones,types,towers,ftfh]
-	
-	defaults=@@last_user_input
-	
+    }
+
+    # 设定菜单内容
+    zones=""
+    towers=""
+    ftfh=""
+      list = [zones,types,towers,ftfh]
+
+    defaults=@@last_user_input
+
     input = UI.inputbox(prompts, defaults, list, "Set Building")
-	return if input == nil or input == false
+	  return if input == nil or input == false
 	
-	@@last_user_input = input
+	  @@last_user_input = input
     sel = Sketchup.active_model.selection
     selected_groups=[]
     sel.each{|e| selected_groups<<e if e.class == Sketchup::Group}
@@ -135,7 +135,7 @@ module SUExcel
       p "name=#{name}"
       group.name=name
       group.set_attribute("BuildingBlock","ftfh",input[3].to_f)
-	  AreaUpdater.create_or_invalidate(group)
+	    AreaUpdater.create_or_invalidate(group)
       #AreaUpdater.new(group)
       @@data_manager.updateData(group)
     }

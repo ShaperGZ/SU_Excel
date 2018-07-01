@@ -28,16 +28,6 @@ module SUExcel
       updateToExcel()  if @enable_send_to_excel
       SUExcel.update_data_note()
     end
-
-	def updateBaseArea()
-		base_area_by_t=Hash.new
-		@@data.each{|e|
-			val=e[1]
-			t=val[1]
-			base_area=val[5]
-			base_area_by_t[t]=val
-		}
-	end
 	
     def updateToExcel()
       #p "updating data to excel, data:"
@@ -47,9 +37,9 @@ module SUExcel
 
     def analyzeEntity(entity)
       block_info = entity.name.split('_')
-	  bounds=entity.bounds
-	  #block_info<<bounds.min.z
-      colorKey = block_info[2]
+	    bounds=entity.bounds
+	    #block_info<<bounds.min.z
+      colorKey = block_info[3]
       colorize(entity, colorKey)
       return block_info
     end
@@ -57,7 +47,12 @@ module SUExcel
     def colorize(group,colorKey)
       #colorize
       colors=SUExcel.colors
+
       color=colors[colorKey]
+      if color == nil
+        p "colors=#{color}, colorKey=#{colorKey}"
+        return
+      end
       color=Sketchup::Color.new(color[0].to_i, color[1].to_i, color[2].to_i)
       group.entities.each {|ent|
           ent.material = color if colors.key?(colorKey) and ent.class == Sketchup::Face
