@@ -35,15 +35,54 @@ module Arch
     end
   end
 
-  class Block
-    def initialize(gp)
-      @enableUpdate = true
+  class BlockUpdateBehaviour
+    def initizalize(gp)
       @gp=gp
+      @enableUpdate = true
+    end
+
+    def onOpen(e)
+    end
+
+    def onClose(e)
+    end
+
+    def onChangeEntity(e)
+    end
+
+    def onEraseEntity(e)
+    end
+
+    def onElementAdded(entities, e)
+    end
+
+    def onElementModified(entities, e)
+    end
+  end
+
+  class Block < BlockUpdateBehaviour
+    @@created_objects=Hash.new
+    def self.created_objects
+      @@created_objects
+    end
+    def self.create_or_get(g)
+      if @@created_objects.key?(g.guid)
+        return @@created_objects[g.guid]
+      else
+        return Block.new(g)
+      end
+    end
+
+    def initialize (gp)
+      super(gp)
+      @enableUpdate = true
       @entObs=[]
       @entsObs=[]
+      @updators=[]
       add_entsObserver(EntsObs.new(self))
       add_entObserver(EntObs.new(self))
       add_entObserver(InstObs.new(self))
+      @@created_objects<gp.guid
     end
     def add_entObserver(observer)
       obs=@gp.add_observer(observer)
@@ -59,22 +98,24 @@ module Arch
 
     #override the following methods
     def onOpen(e)
-
+      @updators.each{|u| u.onOpen(e)} if @enableUpdate
     end
     def onClose(e)
-
+      @updators.each{|u| u.onClose(e)} if @enableUpdate
     end
     def onChangeEntity(e)
-
+      @updators.each{|u| u.onChangeEntity(e)} if @enableUpdate
     end
     def onEraseEntity(e)
-
+      @updators.each{|u| u.onEraseEntity(e)} if @enableUpdate
+      p "deleted e:#(e.guid}"
+      @@created_objects.delete(e.guid)
     end
     def onElementAdded(entities, e)
-      #p "added #{e}"
+      @updators.each{|u| u.onElementAdded(entities, e)} if @enableUpdate
     end
     def onElementModified(entities, e)
-
+      @updators.each{|u| u.onElementModified(entities, e)} if @enableUpdate
     end
   end
 end

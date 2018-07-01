@@ -6,6 +6,9 @@ require 'pathname'
 require File.expand_path('../data_manager',__FILE__)
 require File.expand_path('../excel_connector',__FILE__)
 require File.expand_path('../CalArea2',__FILE__)
+require File.expand_path('../arch_util',__FILE__)
+require File.expand_path('../archi',__FILE__)
+require File.expand_path('../building_block',__FILE__)
 
 $enableOnEntityAdded=true
 $firstime=true
@@ -134,8 +137,9 @@ module SUExcel
       name="#{input[0]}_#{input[1]}_#{input[2]}_#{input[3]}"
       p "name=#{name}"
       group.name=name
-      group.set_attribute("BuildingBlock","ftfh",input[3].to_f)
-	    AreaUpdater.create_or_invalidate(group)
+      #group.set_attribute("BuildingBlock","ftfh",input[3].to_f)
+      BuildingBlock.create_or_invalidate(group,input[0],input[1],input[2],input[3].to_f)
+	    #AreaUpdater.create_or_invalidate(group)
       #AreaUpdater.new(group)
       @@data_manager.updateData(group)
     }
