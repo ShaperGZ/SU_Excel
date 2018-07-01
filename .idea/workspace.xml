@@ -2,11 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8234961c-f71b-4dd5-902b-ac68895a594c" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/bh_cal_area.rb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bh_face_constrain.rb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/building_block.rb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/archi.rb" beforeDir="false" afterPath="$PROJECT_DIR$/archi.rb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bh_face_constrain.rb" beforeDir="false" afterPath="$PROJECT_DIR$/bh_face_constrain.rb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/building_block.rb" beforeDir="false" afterPath="$PROJECT_DIR$/building_block.rb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/entry.rb" beforeDir="false" afterPath="$PROJECT_DIR$/entry.rb" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -35,8 +33,8 @@
       <file leaf-file-name="entry.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/entry.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="160">
-              <caret line="10" column="43" selection-start-line="10" selection-start-column="43" selection-end-line="10" selection-end-column="43" />
+            <state relative-caret-position="176">
+              <caret line="11" column="57" selection-start-line="11" selection-start-column="57" selection-end-line="11" selection-end-column="57" />
             </state>
           </provider>
         </entry>
@@ -53,7 +51,7 @@
       <file leaf-file-name="CalArea2.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/CalArea2.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="203">
+            <state relative-caret-position="512">
               <caret line="111" column="2" selection-start-line="111" selection-start-column="2" selection-end-line="117" selection-end-column="5" />
               <folding>
                 <element signature="e#83#200#0" />
@@ -73,7 +71,6 @@
                 <element signature="e#1223#1273#0" />
                 <element signature="e#1276#1356#0" />
                 <element signature="e#1359#1542#0" />
-                <element signature="e#1359#1542#0" />
                 <element signature="e#1548#2107#0" />
                 <element signature="e#1600#1650#0" />
                 <element signature="e#1654#1784#0" />
@@ -82,7 +79,6 @@
                 <element signature="e#1824#2038#1" />
                 <element signature="e#2178#2230#0" />
                 <element signature="e#2234#2305#0" />
-                <element signature="e#2129#6394#1" />
                 <element signature="e#2379#2540#0" />
                 <element signature="e#2416#2534#2" />
                 <element signature="e#2690#3245#0" />
@@ -114,13 +110,8 @@
       <file leaf-file-name="bh_face_constrain.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/bh_face_constrain.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state>
-              <caret column="6" selection-start-column="6" selection-end-column="6" />
-              <folding>
-                <element signature="e#379#1217#0" />
-                <element signature="e#275#1046#1" />
-                <element signature="e#760#838#0" />
-              </folding>
+            <state relative-caret-position="-176">
+              <caret line="1" selection-start-line="1" selection-end-line="1" />
             </state>
           </provider>
         </entry>
@@ -129,7 +120,7 @@
         <entry file="file://$PROJECT_DIR$/bh_cal_area.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="176">
-              <caret line="11" column="12" lean-forward="true" selection-start-line="11" selection-start-column="12" selection-end-line="11" selection-end-column="12" />
+              <caret line="11" column="12" selection-start-line="11" selection-start-column="12" selection-end-line="11" selection-end-column="12" />
             </state>
           </provider>
         </entry>
@@ -137,12 +128,8 @@
       <file leaf-file-name="building_block.rb" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/building_block.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="272">
-              <caret line="20" column="5" lean-forward="true" selection-start-line="20" selection-start-column="5" selection-end-line="20" selection-end-column="5" />
-              <folding>
-                <element signature="e#73#220#0" />
-                <element signature="e#77#150#0" />
-              </folding>
+            <state relative-caret-position="304">
+              <caret line="25" column="24" lean-forward="true" selection-start-line="25" selection-start-column="24" selection-end-line="25" selection-end-column="24" />
             </state>
           </provider>
         </entry>
@@ -150,8 +137,8 @@
       <file leaf-file-name="archi.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/archi.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-176">
-              <caret line="37" column="8" selection-start-line="37" selection-start-column="8" selection-end-line="37" selection-end-column="8" />
+            <state relative-caret-position="335">
+              <caret line="75" column="23" lean-forward="true" selection-start-line="75" selection-start-column="23" selection-end-line="75" selection-end-column="23" />
               <folding>
                 <element signature="e#14#350#0" />
                 <element signature="e#354#622#0" />
@@ -165,7 +152,7 @@
         <entry file="file://$PROJECT_DIR$/data_manager.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="208">
-              <caret line="29" column="7" lean-forward="true" selection-start-line="29" selection-start-column="7" selection-end-line="29" selection-end-column="7" />
+              <caret line="29" column="7" selection-start-line="29" selection-start-column="7" selection-end-line="29" selection-end-column="7" />
               <folding>
                 <element signature="e#162#203#0" />
                 <element signature="e#209#361#0" />
@@ -237,10 +224,10 @@
         <option value="$PROJECT_DIR$/CalArea2.rb" />
         <option value="$PROJECT_DIR$/data_manager.rb" />
         <option value="$PROJECT_DIR$/bh_cal_area.rb" />
-        <option value="$PROJECT_DIR$/bh_face_constrain.rb" />
-        <option value="$PROJECT_DIR$/entry.rb" />
-        <option value="$PROJECT_DIR$/building_block.rb" />
         <option value="$PROJECT_DIR$/archi.rb" />
+        <option value="$PROJECT_DIR$/entry.rb" />
+        <option value="$PROJECT_DIR$/bh_face_constrain.rb" />
+        <option value="$PROJECT_DIR$/building_block.rb" />
       </list>
     </option>
   </component>
@@ -332,16 +319,17 @@
       <workItem from="1530079605274" duration="15502000" />
       <workItem from="1530405262744" duration="1574000" />
       <workItem from="1530406865414" duration="6706000" />
+      <workItem from="1530457589231" duration="756000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="104190000" />
+    <option name="totallyTimeSpent" value="104946000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-6" y="-6" width="1513" height="973" extended-state="6" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.3030303" visible="true" weight="0.1340894" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.30124778" visible="true" weight="0.1340894" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" />
@@ -349,7 +337,7 @@
       <window_info anchor="bottom" id="Database Changes" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Version Control" order="7" visible="true" weight="0.32894737" />
       <window_info anchor="bottom" id="Run" order="2" />
-      <window_info id="Structure" order="1" sideWeight="0.6969697" side_tool="true" visible="true" weight="0.1340894" />
+      <window_info id="Structure" order="1" sideWeight="0.6987522" side_tool="true" visible="true" weight="0.1340894" />
       <window_info anchor="bottom" id="Terminal" order="7" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
@@ -565,7 +553,7 @@
     <entry file="file://$PROJECT_DIR$/data_manager.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="208">
-          <caret line="29" column="7" lean-forward="true" selection-start-line="29" selection-start-column="7" selection-end-line="29" selection-end-column="7" />
+          <caret line="29" column="7" selection-start-line="29" selection-start-column="7" selection-end-line="29" selection-end-column="7" />
           <folding>
             <element signature="e#162#203#0" />
             <element signature="e#209#361#0" />
@@ -583,35 +571,9 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/excel_connector.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="479">
-          <caret line="54" column="5" selection-start-line="54" selection-start-column="5" selection-end-line="54" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/entry.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="160">
-          <caret line="10" column="43" selection-start-line="10" selection-start-column="43" selection-end-line="10" selection-end-column="43" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/bh_face_constrain.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="6" selection-start-column="6" selection-end-column="6" />
-          <folding>
-            <element signature="e#379#1217#0" />
-            <element signature="e#275#1046#1" />
-            <element signature="e#760#838#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/CalArea2.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="203">
+        <state relative-caret-position="512">
           <caret line="111" column="2" selection-start-line="111" selection-start-column="2" selection-end-line="117" selection-end-column="5" />
           <folding>
             <element signature="e#83#200#0" />
@@ -631,7 +593,6 @@
             <element signature="e#1223#1273#0" />
             <element signature="e#1276#1356#0" />
             <element signature="e#1359#1542#0" />
-            <element signature="e#1359#1542#0" />
             <element signature="e#1548#2107#0" />
             <element signature="e#1600#1650#0" />
             <element signature="e#1654#1784#0" />
@@ -640,7 +601,6 @@
             <element signature="e#1824#2038#1" />
             <element signature="e#2178#2230#0" />
             <element signature="e#2234#2305#0" />
-            <element signature="e#2129#6394#1" />
             <element signature="e#2379#2540#0" />
             <element signature="e#2416#2534#2" />
             <element signature="e#2690#3245#0" />
@@ -671,14 +631,14 @@
     <entry file="file://$PROJECT_DIR$/bh_cal_area.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="176">
-          <caret line="11" column="12" lean-forward="true" selection-start-line="11" selection-start-column="12" selection-end-line="11" selection-end-column="12" />
+          <caret line="11" column="12" selection-start-line="11" selection-start-column="12" selection-end-line="11" selection-end-column="12" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/archi.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-176">
-          <caret line="37" column="8" selection-start-line="37" selection-start-column="8" selection-end-line="37" selection-end-column="8" />
+        <state relative-caret-position="335">
+          <caret line="75" column="23" lean-forward="true" selection-start-line="75" selection-start-column="23" selection-end-line="75" selection-end-column="23" />
           <folding>
             <element signature="e#14#350#0" />
             <element signature="e#354#622#0" />
@@ -687,14 +647,31 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/excel_connector.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="479">
+          <caret line="54" column="5" selection-start-line="54" selection-start-column="5" selection-end-line="54" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/entry.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="176">
+          <caret line="11" column="57" selection-start-line="11" selection-start-column="57" selection-end-line="11" selection-end-column="57" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bh_face_constrain.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-176">
+          <caret line="1" selection-start-line="1" selection-end-line="1" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/building_block.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="272">
-          <caret line="20" column="5" lean-forward="true" selection-start-line="20" selection-start-column="5" selection-end-line="20" selection-end-column="5" />
-          <folding>
-            <element signature="e#73#220#0" />
-            <element signature="e#77#150#0" />
-          </folding>
+        <state relative-caret-position="304">
+          <caret line="25" column="24" lean-forward="true" selection-start-line="25" selection-start-column="24" selection-end-line="25" selection-end-column="24" />
         </state>
       </provider>
     </entry>

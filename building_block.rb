@@ -1,6 +1,7 @@
 
 
 
+
 class BuildingBlock < Arch::Block
 
   #类静态函数，保证不重复加载监听器
@@ -32,7 +33,7 @@ class BuildingBlock < Arch::Block
   def initialize(gp,zone="zone1",tower="t1",program="retail",ftfh=3)
     super(gp)
     setAttr4(zone,tower,program,ftfh)
-    @updators < BH_FaceConstrain.new(gp)
+    @updators << BH_FaceConstrain.new(gp)
     #@updators < BH_CalArea.new(gp)
 
     invalidate
@@ -50,7 +51,7 @@ class BuildingBlock < Arch::Block
     dict.each{|kvp|
       k=kvp[0]
       v=kvp[1]
-      set_attribute("BuildingBlock",k,v)
+      @gp.set_attribute("BuildingBlock",k,v)
     }
   end
 

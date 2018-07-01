@@ -9,6 +9,7 @@ require File.expand_path('../CalArea2',__FILE__)
 require File.expand_path('../arch_util',__FILE__)
 require File.expand_path('../archi',__FILE__)
 require File.expand_path('../building_block',__FILE__)
+require File.expand_path('../bh_face_constrain',__FILE__)
 
 $enableOnEntityAdded=true
 $firstime=true

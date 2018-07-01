@@ -1,4 +1,5 @@
-class BH_FaceConstrain < BlockUpdateBehaviour
+
+class BH_FaceConstrain < Arch::BlockUpdateBehaviour
 
   def initialize(gp)
     super(gp)

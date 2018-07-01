@@ -36,7 +36,7 @@ module Arch
   end
 
   class BlockUpdateBehaviour
-    def initizalize(gp)
+    def initialize(gp)
       @gp=gp
       @enableUpdate = true
     end
@@ -82,7 +82,7 @@ module Arch
       add_entsObserver(EntsObs.new(self))
       add_entObserver(EntObs.new(self))
       add_entObserver(InstObs.new(self))
-      @@created_objects<gp.guid
+      @@created_objects[gp.guid]=self
     end
     def add_entObserver(observer)
       obs=@gp.add_observer(observer)
