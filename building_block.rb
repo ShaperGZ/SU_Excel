@@ -21,7 +21,6 @@ class BuildingBlock < Arch::Block
     end
   end
 
-
   def self.remove_deleted()
     hs=@@created_objects
     hs.keys.each{|k|
@@ -29,12 +28,12 @@ class BuildingBlock < Arch::Block
       hs.delete(k) if gp==nil or gp.deleted?
     }
   end
-
+  
   def initialize(gp,zone="zone1",tower="t1",program="retail",ftfh=3)
     super(gp)
     setAttr4(zone,tower,program,ftfh)
-    @updators << BH_FaceConstrain.new(gp)
-    #@updators < BH_CalArea.new(gp)
+    @updators << BH_FaceConstrain.new(gp,self)
+    @updators << BH_CalArea.new(gp,self)
 
     invalidate
   end
@@ -57,6 +56,7 @@ class BuildingBlock < Arch::Block
 
   def invalidate()
     @updators.each{|e| e.onClose(@gp)}
+    SUExcel.data_manager.onChangeEntity(@gp)
   end
 
 end

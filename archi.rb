@@ -36,8 +36,11 @@ module Arch
   end
 
   class BlockUpdateBehaviour
-    def initialize(gp)
+    attr_accessor :gp
+    attr_accessor :host
+    def initialize(gp,host=nil)
       @gp=gp
+      @host=host
       @enableUpdate = true
     end
 
@@ -95,6 +98,9 @@ module Arch
     def enableUpdate()
       @enableUpdate
     end
+    def enableUpdate=(val)
+      @enableUpdate=val
+    end
 
     #override the following methods
     def onOpen(e)
@@ -108,8 +114,7 @@ module Arch
     end
     def onEraseEntity(e)
       @updators.each{|u| u.onEraseEntity(e)} if @enableUpdate
-      p "deleted e:#(e.guid}"
-      @@created_objects.delete(e.guid)
+      @@created_objects.delete(e.guid) if @enableUpdate
     end
     def onElementAdded(entities, e)
       @updators.each{|u| u.onElementAdded(entities, e)} if @enableUpdate

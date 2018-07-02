@@ -5,11 +5,17 @@ require 'pathname'
 
 require File.expand_path('../data_manager',__FILE__)
 require File.expand_path('../excel_connector',__FILE__)
-require File.expand_path('../CalArea2',__FILE__)
 require File.expand_path('../arch_util',__FILE__)
 require File.expand_path('../archi',__FILE__)
 require File.expand_path('../building_block',__FILE__)
+
+# 自动化行为
+# 自动规整层高： BH_FaceConstrain
+# 切出楼层算面积：BH_CalArea
+# 可视化（方案颜色，立面效果）：BH_Visualize
 require File.expand_path('../bh_face_constrain',__FILE__)
+require File.expand_path('../bh_cal_area',__FILE__)
+require File.expand_path('../bh_visualize',__FILE__)
 
 $enableOnEntityAdded=true
 $firstime=true
@@ -202,17 +208,19 @@ module SUExcel
     @@data_manager.enable_send_to_excel =false
     entites = Sketchup.active_model.entities
 
-	#清空非法数据
-	#通常打开新文件时，原来的数据会留在记录里成为非法数据
-	AreaUpdater.remove_deleted()
-	
+    #清空非法数据
+    #通常打开新文件时，原来的数据会留在记录里成为非法数据
+    #AreaUpdater.remove_deleted()
+    BuildingBlock.remove_deleted()
+
+
     #要先把现有的entities提取出来，如果直接拿Sketchup.active_model.entities来遍历
     # 会把过程中新建的entity也遍历
     ents=[]
     entites.each {|e| ents<<e}
     ents.each {|e|
       if e.typename == "Group" and self.satisfy_name(e.name)
-        AreaUpdater.create_or_invalidate(e)
+        BuildingBlock.create_or_invalidate(e)
         self.data_manager.updateData(e)
       end
     }

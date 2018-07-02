@@ -1,8 +1,8 @@
 
 class BH_FaceConstrain < Arch::BlockUpdateBehaviour
 
-  def initialize(gp)
-    super(gp)
+  def initialize(gp,host)
+    super(gp,host)
   end
 
   def onClose(e)
