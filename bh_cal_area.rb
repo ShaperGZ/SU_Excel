@@ -17,6 +17,7 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
   def onChangeEntity(e)
     super(e)
     invalidate
+
   end
   def onEraseEntity(e)
     super(e)

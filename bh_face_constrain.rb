@@ -22,7 +22,8 @@ class BH_FaceConstrain < Arch::BlockUpdateBehaviour
   end
 
   def constrain_one_faceZ(f)
-
+    p "@gp=#{gp}"
+    p "@gp.class=#{gp.class}"
     base_z=@gp.bounds.min.z
     return if f.vertices[0].position.z<=0
     #return if f.normal.z == -1 and f.vertices[0].position.z <= base_z

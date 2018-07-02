@@ -22,7 +22,13 @@ module SUExcel
 
     def updateData(entity)
       block_info=analyzeEntity(entity)
-      @@data[entity.guid] = Array[block_info[0],block_info[1],block_info[2],block_info[3],entity.get_attribute("BuildingBlock","area")]
+      zone=entity.get_attribute("BuildingBlock","zone")
+      tower=entity.get_attribute("BuildingBlock","tower")
+      program=entity.get_attribute("BuildingBlock","program")
+      ftfh=entity.get_attribute("BuildingBlock","ftfh")
+      area=entity.get_attribute("BuildingBlock","area")
+
+      @@data[entity.guid] = Array[zone,program,tower,ftfh,area]
       #p block_info
       #p " enable to excel ="+@enable_send_to_excel.to_s
       updateToExcel()  if @enable_send_to_excel

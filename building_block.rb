@@ -5,7 +5,7 @@
 class BuildingBlock < Arch::Block
 
   #类静态函数，保证不重复加载监听器
-  def self.create_or_invalidate(g,zone="zone1",tower="t1",program="retail",ftfh=3)
+  def self.create_or_invalidate(g,zone=nil,tower=nil,program=nil,ftfh=nil)
     # 删除非法reference只在读取新档案时有用，但放在这里保证每次选择都检查并清除非法组
     self.remove_deleted()
 
@@ -13,20 +13,37 @@ class BuildingBlock < Arch::Block
     # 所以只更新其属性，然后invalidate
     # 否则就新创建一个 BuuildingBlock, 在构造器里会invalidate
     if @@created_objects.key?(g.guid)
-      block=@@created_objects[g.guid].setAttr(zone,tower,program,ftfh)
+      block=@@created_objects[g.guid]
+      if program==nil and ftfh==nil
+        zone=g.get_attribute("BuildingBlock","zone")
+        tower=g.get_attribute("BuildingBlock","tower")
+        program=g.get_attribute("BuildingBlock","program")
+        ftfh=g.get_attribute("BuildingBlock","ftfh")
+      end
+      #p "setAttr4 ftfh=#{ftfh}"
+      block.setAttr4(zone,tower,program,ftfh)
       block.invalidate
       return block
     else
+      zone="zone1" if zone==nil
+      tower="t1" if tower==nil
+      program="retail" if program==nil
+      ftfh=3 if ftfh==nil
       return BuildingBlock.new(g,zone,tower,program,ftfh)
     end
   end
 
   def self.remove_deleted()
     hs=@@created_objects
+    count=0
     hs.keys.each{|k|
       gp=hs[k].gp
-      hs.delete(k) if gp==nil or gp.deleted?
+      if gp==nil or gp.deleted?
+        hs.delete(k)
+        count+=1
+      end
     }
+    p "#{count} objects are deleted from BuildingBlock.created_objects"
   end
   
   def initialize(gp,zone="zone1",tower="t1",program="retail",ftfh=3)
@@ -36,6 +53,16 @@ class BuildingBlock < Arch::Block
     @updators << BH_CalArea.new(gp,self)
 
     invalidate
+  end
+
+  def onClose(e)
+    super(e)
+    SUExcel.data_manager.onChangeEntity(e)
+  end
+
+  def onChangeEntity(e)
+    super(e)
+    SUExcel.data_manager.onChangeEntity(e)
   end
 
   def setAttr4(zone,tower,program,ftfh)
@@ -51,6 +78,7 @@ class BuildingBlock < Arch::Block
       k=kvp[0]
       v=kvp[1]
       @gp.set_attribute("BuildingBlock",k,v)
+      p "setting #{k} to #{v}"
     }
   end
 
@@ -58,5 +86,6 @@ class BuildingBlock < Arch::Block
     @updators.each{|e| e.onClose(@gp)}
     SUExcel.data_manager.onChangeEntity(@gp)
   end
+
 
 end

@@ -100,18 +100,18 @@ module SUExcel
 
     prompts = ["分区","业态","栋","层高"]
     defaults = @@last_user_input
-    types = ""
+    program = ""
     self.read_color_profile if @@colors == nil
     @@colors.keys.each{|key| 
-		types +="|" if types!=""
-		types+=key.to_s
+		program +="|" if program!=""
+		program+=key.to_s
     }
 
     # 设定菜单内容
     zones=""
     towers=""
     ftfh=""
-      list = [zones,types,towers,ftfh]
+    list = [zones,program,towers,ftfh]
 
     defaults=@@last_user_input
 
@@ -121,7 +121,7 @@ module SUExcel
 	  @@last_user_input = input
     sel = Sketchup.active_model.selection
     selected_groups=[]
-    sel.each{|e| selected_groups<<e if e.class == Sketchup::Group}
+    sel.each{|e| selected_groups<<e if e.class == Sketchup::Group or e.class == Sketchup::ComponentInstance}
 
     group_count = selected_groups.size
     if  group_count == 0 || sel.empty?
@@ -133,21 +133,27 @@ module SUExcel
     p "selected count =#{selected_groups.size}"
     # two actions: 01 assign color, 02 assign name
     selected_groups.each{|group|
+      # TODO: 颜色会交给BH_Visualize赋予; 先把方案颜色赋予BH_Visualize.scheme_colors,再从BH_Visualize根据状态赋予模型
       # 01 assign color
-      color=@@colors[input[1]]
-      color=Sketchup::Color.new(color[0].to_i, color[1].to_i, color[2].to_i)
-      group.entities.each {|ent|
-        ent.material = color if color!=nil and ent.class == Sketchup::Face
-      }
+      #color=@@colors[input[1]]
+      #color=Sketchup::Color.new(color[0].to_i, color[1].to_i, color[2].to_i)
+      #group.entities.each {|ent|
+      #  ent.material = color if color!=nil and ent.class == Sketchup::Face
+      #}
+
+      # TODO: 不再通过名称设定义，全部定义直接设到"BuildingBlock" attribute dict 里
       # 02 assign name
       building_type=input[1]
-      name="#{input[0]}_#{input[1]}_#{input[2]}_#{input[3]}"
+      #name="#{input[0]}_#{input[1]}_#{input[2]}_#{input[3]}"
       p "name=#{name}"
-      group.name=name
+      #group.name=name
       #group.set_attribute("BuildingBlock","ftfh",input[3].to_f)
-      BuildingBlock.create_or_invalidate(group,input[0],input[1],input[2],input[3].to_f)
-	    #AreaUpdater.create_or_invalidate(group)
-      #AreaUpdater.new(group)
+      zone=input[0]
+      program=input[1]
+      tower=input[2]
+      ftfh=input[3].to_f
+      #p "create_or_invalidate ftfh=#{ftfh}"
+      BuildingBlock.create_or_invalidate(group,zone,tower,program,ftfh)
       @@data_manager.updateData(group)
     }
   end
@@ -194,13 +200,7 @@ module SUExcel
     end
   end
 
-  def self.satisfy_name(name)
-    if (name.include? "_") and (name.split('_').size > 3)
-      return true
-    else
-      return false
-    end
-  end
+
 
   def self.batch_add_observers()
     @@data_manager.clearData if @@data_manager != nil
@@ -219,7 +219,8 @@ module SUExcel
     ents=[]
     entites.each {|e| ents<<e}
     ents.each {|e|
-      if e.typename == "Group" and self.satisfy_name(e.name)
+      try_get=e.get_attribute("BuildingBlock","ftfh")
+      if try_get!=nil
         BuildingBlock.create_or_invalidate(e)
         self.data_manager.updateData(e)
       end
