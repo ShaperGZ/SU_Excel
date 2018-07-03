@@ -85,6 +85,7 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
   end
 
   def intersectFloors(subject,floors)
+    return nil if subject.deleted?
     modelEnts=Sketchup.active_model.entities
     dup=subject.copy
     cuts=floors.intersect(dup)

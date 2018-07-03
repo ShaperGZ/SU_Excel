@@ -13,7 +13,8 @@ class BuildingBlock < Arch::Block
     # 所以只更新其属性，然后invalidate
     # 否则就新创建一个 BuuildingBlock, 在构造器里会invalidate
     if @@created_objects.key?(g.guid)
-      block=@@created_objects[g.guid].setAttr(zone,tower,program,ftfh)
+      block=@@created_objects[g.guid]
+      block.setAttr4(zone,tower,program,ftfh)
       block.invalidate
       return block
     else
@@ -34,6 +35,7 @@ class BuildingBlock < Arch::Block
     setAttr4(zone,tower,program,ftfh)
     @updators << BH_FaceConstrain.new(gp,self)
     @updators << BH_CalArea.new(gp,self)
+    @updators << BH_Parapet.new(gp,self)
 
     invalidate
   end

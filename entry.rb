@@ -16,6 +16,7 @@ require File.expand_path('../building_block',__FILE__)
 require File.expand_path('../bh_face_constrain',__FILE__)
 require File.expand_path('../bh_cal_area',__FILE__)
 require File.expand_path('../bh_visualize',__FILE__)
+require File.expand_path('../bh_parapet',__FILE__)
 
 $enableOnEntityAdded=true
 $firstime=true
