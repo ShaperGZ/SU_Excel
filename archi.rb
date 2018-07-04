@@ -65,6 +65,8 @@ module Arch
 
   class Block < BlockUpdateBehaviour
     @@created_objects=Hash.new
+    attr_accessor :updators
+
     def self.created_objects
       @@created_objects
     end

@@ -1,7 +1,4 @@
 
-
-
-
 class BuildingBlock < Arch::Block
 
   #类静态函数，保证不重复加载监听器
@@ -12,7 +9,8 @@ class BuildingBlock < Arch::Block
     # 如果这个组已经创建过，不能再创建，因为已经有了监听器
     # 所以只更新其属性，然后invalidate
     # 否则就新创建一个 BuuildingBlock, 在构造器里会invalidate
-    if @@created_objects.key?(g.guid)
+
+    if !g.deleted? and @@created_objects.key?(g.guid)
       block=@@created_objects[g.guid]
       if program==nil and ftfh==nil
         zone=g.get_attribute("BuildingBlock","zone")
@@ -45,24 +43,26 @@ class BuildingBlock < Arch::Block
     }
     p "#{count} objects are deleted from BuildingBlock.created_objects"
   end
-  
+
+  attr_accessor :updators
   def initialize(gp,zone="zone1",tower="t1",program="retail",ftfh=3)
     super(gp)
     setAttr4(zone,tower,program,ftfh)
     @updators << BH_FaceConstrain.new(gp,self)
     @updators << BH_CalArea.new(gp,self)
+    @updators << BH_Visualize.new(gp,self)
 
     invalidate
   end
 
   def onClose(e)
     super(e)
-    SUExcel.data_manager.onChangeEntity(e)
+    SUExcel.data_manager.onChangeEntity(e) if SUExcel.data_manager != nil
   end
 
   def onChangeEntity(e)
     super(e)
-    SUExcel.data_manager.onChangeEntity(e)
+    SUExcel.data_manager.onChangeEntity(e) if SUExcel.data_manager != nil
   end
 
   def setAttr4(zone,tower,program,ftfh)
@@ -84,8 +84,7 @@ class BuildingBlock < Arch::Block
 
   def invalidate()
     @updators.each{|e| e.onClose(@gp)}
-    SUExcel.data_manager.onChangeEntity(@gp)
+    SUExcel.data_manager.onChangeEntity(@gp) if SUExcel.data_manager != nil
   end
-
 
 end

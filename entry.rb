@@ -39,9 +39,32 @@ module Sketchup::Excel
   cmd2.status_bar_text = "Set building"
   cmd1.menu_text = "set building"
 
+  cmd3 = UI::Command.new("SetBuilding"){SUExcel.set_conceptMode()}
+  cmd3.small_icon = "Images/icon2.jpg"
+  cmd3.large_icon = "Images/icon2.jpg"
+  cmd3.tooltip = "conceptMode"
+  cmd3.status_bar_text = "set ConceptMode"
+  cmd3.menu_text = "set ConceptMode"
+
+  cmd4 = UI::Command.new("SetBuilding"){SUExcel.set_textureMode()}
+  cmd4.small_icon = "Images/icon2.jpg"
+  cmd4.large_icon = "Images/icon2.jpg"
+  cmd4.tooltip = "textureMode"
+  cmd4.status_bar_text = "set texture"
+  cmd4.menu_text = "set texture"
+
+  cmd5 = UI::Command.new("SetBuilding"){SUExcel.showOrHide()}
+  cmd5.small_icon = "Images/icon1.jpg"
+  cmd5.large_icon = "Images/icon1.jpg"
+  cmd5.tooltip = "showOrHide"
+  cmd5.status_bar_text = "showOrHide"
+  cmd5.menu_text = "showOrHide"
 
   toolbar1 = toolbar1.add_item cmd1
   toolbar1 = toolbar1.add_item cmd2
+  toolbar1 = toolbar1.add_item cmd3
+  toolbar1 = toolbar1.add_item cmd4
+  toolbar1 = toolbar1.add_item cmd5
   toolbar1.show
 end
 
@@ -55,7 +78,7 @@ module SUExcel
   @@excel=nil
   @@is_first_time_connect=true
   @@note=nil
-  
+  @@idex = 0
   @@last_user_input=["zone1","retail","t1","3"]
   def self.data_manager
     @@data_manager
@@ -101,7 +124,15 @@ module SUExcel
     prompts = ["分区","业态","栋","层高"]
     defaults = @@last_user_input
     program = ""
-    self.read_color_profile if @@colors == nil
+
+    p "@@colors==nil #{@@colors == nil}"
+    p "@@colors=#{@@colors}" if @@colors !=nil
+    if @@colors == nil
+      self.read_color_profile
+      #BH_Visualize.set_scheme_colors(SUExcel.colors)
+    end
+    BH_Visualize.set_scheme_colors(SUExcel.colors)
+
     @@colors.keys.each{|key| 
 		program +="|" if program!=""
 		program+=key.to_s
@@ -128,7 +159,6 @@ module SUExcel
       UI.messagebox("未选择任何组！")
       return
     end
-
 
     p "selected count =#{selected_groups.size}"
     # two actions: 01 assign color, 02 assign name
@@ -198,11 +228,17 @@ module SUExcel
       nums = info[1].split(',')
       @@colors[id] = nums
     end
+
   end
 
-
-
   def self.batch_add_observers()
+
+    if @@colors == nil
+      self.read_color_profile
+      #BH_Visualize.set_scheme_colors(SUExcel.colors)
+    end
+    BH_Visualize.set_scheme_colors(SUExcel.colors)
+
     @@data_manager.clearData if @@data_manager != nil
     #@@excel.clearExcel()
     @@data_manager.enable_send_to_excel =false
@@ -212,7 +248,6 @@ module SUExcel
     #通常打开新文件时，原来的数据会留在记录里成为非法数据
     #AreaUpdater.remove_deleted()
     BuildingBlock.remove_deleted()
-
 
     #要先把现有的entities提取出来，如果直接拿Sketchup.active_model.entities来遍历
     # 会把过程中新建的entity也遍历
@@ -242,6 +277,31 @@ module SUExcel
     tbd.each{|e| e.erase!}
   end
 
+  def self.set_conceptMode()
+    BH_Visualize.set_modes_concept
+  end
+
+  def self.set_textureMode()
+    BH_Visualize.set_modes_texture
+  end
+
+  def self.showOrHide()
+    puts @@idex
+    Sketchup.active_model.entities.each{|entity|
+      if entity.typename == "Group" and entity.name == "SCRIPTGENERATEDOBJECTS"
+        if(@@idex == 0)
+          @@idex = 1
+          puts "hide"
+          return
+        else
+          @@idex = 0
+          puts "show"
+          return
+        end
+      end
+    }
+  end
+
 end
 
 
@@ -251,7 +311,7 @@ end
 
 
 
-
+p "@@color==nil #{SUExcel.colors == nil}, @@color=#{SUExcel.colors}"
 
 
 

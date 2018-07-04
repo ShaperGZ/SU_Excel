@@ -21,7 +21,7 @@ module SUExcel
     end
 
     def updateData(entity)
-      block_info=analyzeEntity(entity)
+     # block_info=analyzeEntity(entity)
       zone=entity.get_attribute("BuildingBlock","zone")
       tower=entity.get_attribute("BuildingBlock","tower")
       program=entity.get_attribute("BuildingBlock","program")
@@ -29,15 +29,11 @@ module SUExcel
       area=entity.get_attribute("BuildingBlock","area")
 
       @@data[entity.guid] = Array[zone,program,tower,ftfh,area]
-      #p block_info
-      #p " enable to excel ="+@enable_send_to_excel.to_s
       updateToExcel()  if @enable_send_to_excel
       SUExcel.update_data_note()
     end
 	
     def updateToExcel()
-      #p "updating data to excel, data:"
-      #p @@data
       @excelConnector.updateExcel(@@data)
     end
 
@@ -51,7 +47,6 @@ module SUExcel
     end
 
     def colorize(group,colorKey)
-      #colorize
       colors=SUExcel.colors
 
       color=colors[colorKey]
