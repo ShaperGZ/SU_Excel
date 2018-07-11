@@ -61,6 +61,7 @@ module Arch
 
     def onElementModified(entities, e)
     end
+
   end
 
   class Block < BlockUpdateBehaviour
@@ -89,6 +90,7 @@ module Arch
       add_entObserver(InstObs.new(self))
       @@created_objects[gp.guid]=self
     end
+
     def add_entObserver(observer)
       obs=@gp.add_observer(observer)
       @entObs<<observer

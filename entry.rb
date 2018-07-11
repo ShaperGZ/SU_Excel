@@ -60,17 +60,25 @@ module Sketchup::Excel
   cmd5.status_bar_text = "showOrHide"
   cmd5.menu_text = "showOrHide"
 
+  cmd6 = UI::Command.new("SetBuilding"){SUExcel.open_web()}
+  cmd6.small_icon = "Images/web.png"
+  cmd6.large_icon = "Images/web.png"
+  cmd6.tooltip = "web"
+  cmd6.status_bar_text = "web"
+  cmd6.menu_text = "web"
+
   toolbar1 = toolbar1.add_item cmd1
   toolbar1 = toolbar1.add_item cmd2
   toolbar1 = toolbar1.add_item cmd3
   toolbar1 = toolbar1.add_item cmd4
   toolbar1 = toolbar1.add_item cmd5
+  toolbar1 = toolbar1.add_item cmd6
   toolbar1.show
 end
 
 module SUExcel
   #本项目不再使用$号的全局变量
-  #这些事本项目的全局变量，已SUExcel.dataManager读写
+  #这些是本项目的全局变量，已SUExcel.dataManager读写
 
   @@data_manager=nil
   @@data=nil
@@ -80,6 +88,12 @@ module SUExcel
   @@note=nil
   @@idex = 0
   @@last_user_input=["zone1","retail","t1","3"]
+  @@dlg = nil
+  @@Sele = Sketchup.active_model.selection
+
+  def self.selection
+    return @@Sele
+  end
   def self.data_manager
     @@data_manager
   end
@@ -116,28 +130,20 @@ module SUExcel
   # 缺点是用户需要之后自己修改名字更正zone, t#,和层高ftfh
   # 该方法用于UI，被用户调用
   def self.set_building
-
     if @@data_manager==nil
       self._first_time_connect
     end
-
     prompts = ["分区","业态","栋","层高"]
     defaults = @@last_user_input
     program = ""
 
     p "@@colors==nil #{@@colors == nil}"
     p "@@colors=#{@@colors}" if @@colors !=nil
-    if @@colors == nil
-      self.read_color_profile
-      #BH_Visualize.set_scheme_colors(SUExcel.colors)
-    end
-    BH_Visualize.set_scheme_colors(SUExcel.colors)
 
     @@colors.keys.each{|key| 
 		program +="|" if program!=""
 		program+=key.to_s
     }
-
     # 设定菜单内容
     zones=""
     towers=""
@@ -161,35 +167,27 @@ module SUExcel
     end
 
     p "selected count =#{selected_groups.size}"
-    # two actions: 01 assign color, 02 assign name
     selected_groups.each{|group|
-      # TODO: 颜色会交给BH_Visualize赋予; 先把方案颜色赋予BH_Visualize.scheme_colors,再从BH_Visualize根据状态赋予模型
-      # 01 assign color
-      #color=@@colors[input[1]]
-      #color=Sketchup::Color.new(color[0].to_i, color[1].to_i, color[2].to_i)
-      #group.entities.each {|ent|
-      #  ent.material = color if color!=nil and ent.class == Sketchup::Face
-      #}
-
-      # TODO: 不再通过名称设定义，全部定义直接设到"BuildingBlock" attribute dict 里
-      # 02 assign name
       building_type=input[1]
-      #name="#{input[0]}_#{input[1]}_#{input[2]}_#{input[3]}"
       p "name=#{name}"
-      #group.name=name
-      #group.set_attribute("BuildingBlock","ftfh",input[3].to_f)
       zone=input[0]
       program=input[1]
       tower=input[2]
       ftfh=input[3].to_f
-      #p "create_or_invalidate ftfh=#{ftfh}"
       BuildingBlock.create_or_invalidate(group,zone,tower,program,ftfh)
       @@data_manager.updateData(group)
     }
   end
 
   def self._first_time_connect
-    self.read_color_profile()
+    #读取颜色
+    if @@colors == nil
+      self.read_color_profile
+    end
+    #把颜色dictionary set给 BH_Visualize类
+    BH_Visualize.set_scheme_colors(@@colors)
+    @@Sele.add_observer(MySelectionObserver.new)
+
     @@excel = SUExcel::ExcelConnector.new
     @@data_manager=SUExcel::DataManager.new(SUExcel.excel)
     @@excel.connectExcel()
@@ -232,21 +230,19 @@ module SUExcel
   end
 
   def self.batch_add_observers()
-
-    if @@colors == nil
-      self.read_color_profile
-      #BH_Visualize.set_scheme_colors(SUExcel.colors)
-    end
-    BH_Visualize.set_scheme_colors(SUExcel.colors)
-
     @@data_manager.clearData if @@data_manager != nil
-    #@@excel.clearExcel()
+
     @@data_manager.enable_send_to_excel =false
     entites = Sketchup.active_model.entities
 
+    #递归找组
+    #@group = []
+    #entites.each{|e| @group+= SUExcel.find_group(e)}
+    #p "组总数：#{@group.count}"
+    #entites = @group
+
     #清空非法数据
     #通常打开新文件时，原来的数据会留在记录里成为非法数据
-    #AreaUpdater.remove_deleted()
     BuildingBlock.remove_deleted()
 
     #要先把现有的entities提取出来，如果直接拿Sketchup.active_model.entities来遍历
@@ -285,23 +281,110 @@ module SUExcel
     BH_Visualize.set_modes_texture
   end
 
+  #显示或隐藏名为"SCRIPTGENERATEDOBJECTS"的组
   def self.showOrHide()
-    puts @@idex
     Sketchup.active_model.entities.each{|entity|
       if entity.typename == "Group" and entity.name == "SCRIPTGENERATEDOBJECTS"
         if(@@idex == 0)
-          @@idex = 1
-          puts "hide"
-          return
+          entity.hidden = true
+          BH_CalArea.set_hide(true)
         else
-          @@idex = 0
-          puts "show"
-          return
+          entity.hidden = false
+          BH_CalArea.set_hide(false)
         end
+      end
+    }
+
+    if(@@idex == 0)
+      @@idex = 1
+      return
+    else
+      @@idex = 0
+    end
+  end
+
+  def self.open_web()
+    if @@data_manager==nil
+      self._first_time_connect
+    end
+    @@dlg = UI::WebDialog.new("更改组信息", true, "ShowSketchupDotCom", 739, 641, 150, 150, true)
+    file = File.join(__dir__,"/dialogs/test.html")
+    @@dlg.set_file(file)
+    @@dlg.show
+    @@dlg.set_background_color("999999")
+
+    selections = Sketchup.active_model.selection
+
+    @@dlg.add_action_callback("SetInfo") {|dialog, params|
+      info = params.split('_')
+      @count = 0
+      selections.each{|selection|
+        if selection.typename == "Group"
+          @count += 1
+          BuildingBlock.create_or_invalidate(selection,info[0],info[2],info[1],info[3].to_f)
+          @@data_manager.updateData(selection)
+          UI.messagebox("设置成功！")
+        end
+      }
+      if  @count == 0 || selections.empty?
+        UI.messagebox("未选择任何组！")
       end
     }
   end
 
+  #发送消息到html
+  def self.send_info_to_html(zone,program,tower,ftfh)
+    return if @@dlg == nil
+    @@dlg.execute_script("document.getElementById('id1').value='#{zone}'")
+    @@dlg.execute_script("document.getElementById('id2').value='#{program}'")
+    @@dlg.execute_script("document.getElementById('id3').value='#{tower}'")
+    @@dlg.execute_script("document.getElementById('id4').value='#{ftfh}'")
+  end
+
+  #递归找组
+  def self.find_group(gp)
+    return if gp.typename != "Group"
+    group = []
+    gp.entities.each{|ent|
+      if ent.typename == "Group"
+        if is_single_group(ent)
+          group << ent
+        else
+          find_group(ent)
+        end
+      end
+    }
+    return group
+  end
+
+  def self.is_single_group(ent)
+    a = 0
+    ent.entities.each{|e|
+      if e.typename != "Group"
+        a += 1
+      end
+    }
+    if a == ent.entities.size
+      return true
+    else
+      return false
+    end
+  end
+
+end
+
+#选中事件观察者  鼠标选中单个组时触发
+class MySelectionObserver < Sketchup::SelectionObserver
+  def onSelectionBulkChange(selection)
+    return if SUExcel.selection.size != 1
+    entity = SUExcel.selection[0]
+    return if entity.typename != "Group"
+    zone = entity.get_attribute("BuildingBlock","zone")
+    program = entity.get_attribute("BuildingBlock","program")
+    tower = entity.get_attribute("BuildingBlock","tower")
+    ftfh =  entity.get_attribute("BuildingBlock","ftfh")
+    SUExcel.send_info_to_html(zone,program,tower,ftfh)
+  end
 end
 
 
@@ -311,7 +394,9 @@ end
 
 
 
-p "@@color==nil #{SUExcel.colors == nil}, @@color=#{SUExcel.colors}"
+
+
+
 
 
 

@@ -1,6 +1,11 @@
 
 class BH_CalArea < Arch::BlockUpdateBehaviour
 
+  @@hide_cuts = false
+  def self.set_hide(bool)
+    @@hide_cuts = bool
+  end
+
   def initialize(gp,host)
     super(gp,host)
   end
@@ -47,6 +52,11 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
     @cuts.name=$genName
     ttArea=calAreas()
     entity.set_attribute("BuildingBlock","area",ttArea)
+
+    if @@hide_cuts
+      @cuts.hidden = true
+    end
+
   end
 
   def cutFloor(subject ,ftfh, foffset=1)

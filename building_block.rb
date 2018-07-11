@@ -18,7 +18,7 @@ class BuildingBlock < Arch::Block
         program=g.get_attribute("BuildingBlock","program")
         ftfh=g.get_attribute("BuildingBlock","ftfh")
       end
-      #p "setAttr4 ftfh=#{ftfh}"
+
       block.setAttr4(zone,tower,program,ftfh)
       block.invalidate
       return block
@@ -73,6 +73,7 @@ class BuildingBlock < Arch::Block
     dict["ftfh"]=ftfh
     setAttrByDict(dict)
   end
+
   def setAttrByDict(dict)
     dict.each{|kvp|
       k=kvp[0]

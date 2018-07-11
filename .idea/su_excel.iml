@@ -4,6 +4,9 @@
     <shared />
   </component>
   <component name="NewModuleRootManager">
+    <content url="file://C:/Program Files (x86)/SketchUp/SketchUp 2014/Tools">
+      <excludeFolder url="file://C:/Program Files (x86)/SketchUp/SketchUp 2014/Tools" />
+    </content>
     <content url="file://$MODULE_DIR$" />
     <orderEntry type="jdk" jdkName="ruby-2.4.4-p296" jdkType="RUBY_SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

@@ -21,7 +21,6 @@ module SUExcel
     end
 
     def updateData(entity)
-     # block_info=analyzeEntity(entity)
       zone=entity.get_attribute("BuildingBlock","zone")
       tower=entity.get_attribute("BuildingBlock","tower")
       program=entity.get_attribute("BuildingBlock","program")
@@ -37,18 +36,10 @@ module SUExcel
       @excelConnector.updateExcel(@@data)
     end
 
-    def analyzeEntity(entity)
-      block_info = entity.name.split('_')
-	    bounds=entity.bounds
-	    #block_info<<bounds.min.z
-      colorKey = block_info[3]
-      colorize(entity, colorKey)
-      return block_info
-    end
-
     def colorize(group,colorKey)
+      p 666666666666666666666666666666666
+      return
       colors=SUExcel.colors
-
       color=colors[colorKey]
       if color == nil
         p "colors=#{color}, colorKey=#{colorKey}"
@@ -85,8 +76,6 @@ module SUExcel
     def onElementAdded(entities, entity)       #当添加一个Entities时调用
       updateData(entity)
     end
-
-
 
   end
 end
