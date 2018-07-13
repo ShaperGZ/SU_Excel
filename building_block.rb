@@ -18,7 +18,9 @@ class BuildingBlock < Arch::Block
       block.invalidate
       return block
     else
-      return BuildingBlock.new(g,zone,tower,program,ftfh)
+      b=BuildingBlock.new(g,zone,tower,program,ftfh)
+      b.invalidate
+      return b
     end
   end
 
@@ -33,11 +35,15 @@ class BuildingBlock < Arch::Block
   def initialize(gp,zone="zone1",tower="t1",program="retail",ftfh=3)
     super(gp)
     setAttr4(zone,tower,program,ftfh)
+    add_updators()
+    # 以前是每次构建就invalidate,现在构建后要手动调用invalidate
+    # invalidate
+  end
+
+  def add_updators()
     @updators << BH_FaceConstrain.new(gp,self)
     @updators << BH_CalArea.new(gp,self)
     @updators << BH_Parapet.new(gp,self)
-
-    invalidate
   end
 
   def setAttr4(zone,tower,program,ftfh)

@@ -1,0 +1,53 @@
+[33mcommit e2e58f360eee0c689fc9947b92de21df60260d15[m[33m ([m[1;36mHEAD -> [m[1;32mparapet[m[33m, [m[1;31morigin/parapet[m[33m)[m
+Author: shapergz <lisi@lwkp.com.cn>
+Date:   Tue Jul 3 13:55:09 2018 +0800
+
+    working parapet with fixed condition and height
+
+[33mcommit eab16f27195afb3342fdb239066d579db00f4ee6[m[33m ([m[1;32mrefractor[m[33m, [m[1;32mmaster[m[33m)[m
+Author: shapergz <lisi@lwkp.com.cn>
+Date:   Mon Jul 2 15:49:13 2018 +0800
+
+    deleted extract files
+
+[33mcommit 45d80dd1f6bdaea0b7958433411303b047d3ca6b[m[33m ([m[1;31morigin/refractor[m[33m)[m
+Author: Li Si <lisi@LWKGZ.COM.CN>
+Date:   Mon Jul 2 15:12:15 2018 +0800
+
+    refrac w/ Arch::block concept
+
+[33mcommit 45214b05d8d9553f9f7fdb2ce6b52092bebf0220[m
+Author: holonking <317200789@qq.com>
+Date:   Sun Jul 1 23:19:35 2018 +0800
+
+    fixed constructor wip CalArea
+
+[33mcommit 3731b9cc514c4547f97211454ce64a2932461185[m
+Author: holonking <317200789@qq.com>
+Date:   Sun Jul 1 22:59:32 2018 +0800
+
+    debugging, prblm in inhaeritance constructor, Arch::Block
+
+[33mcommit 3d8c0e53eb06fd3106f8cbb66f37cdfdc3343d93[m[33m ([m[1;31morigin/master[m[33m)[m
+Author: holonking <317200789@qq.com>
+Date:   Sun Jul 1 08:53:55 2018 +0800
+
+    fixed color error
+
+[33mcommit 22ee959f9a874d3b6b48ae9c60b48b497f02319b[m
+Author: unknown <李思>
+Date:   Fri Jun 29 00:28:44 2018 +0800
+
+    working demo, TODO: set attributes to attr dict in gorup
+
+[33mcommit b580372b97ec4a9f86cff20feb558b7aa01bc575[m
+Author: Li Si <lisi@LWKGZ.COM.CN>
+Date:   Wed Jun 27 18:50:29 2018 +0800
+
+    fixed , sosos working
+
+[33mcommit 050b23bd4454baf6d0feb52bee1afaeda3c06740[m
+Author: Li Si <lisi@LWKGZ.COM.CN>
+Date:   Wed Jun 27 12:19:44 2018 +0800
+
+    first commit, modified chaos codes

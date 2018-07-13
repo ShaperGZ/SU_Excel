@@ -13,6 +13,36 @@ module ArchUtil
     ent.transform! t
   end
 
+  def ArchUtil.getVerts(ents)
+    verts=[]
+    ents.each{|e|
+      if e.class == Sketchup::Edge
+        e.vertices.each{|v|
+          verts<<v if !verts.include?(v)
+        }
+      end
+    }
+    verts
+  end
+
+  def ArchUtil.remove_coplanar_edges(entities)
+    entities.each{|e|
+      if e.class == Sketchup::Edge
+        planar=true
+        ref=e.faces[0].normal
+        e.faces.each{|f|
+          if f.normal != ref
+            planar=false
+            break
+          end
+        }
+        if planar
+          e.erase!
+        end
+      end
+    }
+  end
+
   def ArchUtil.genFlrPlns(ent,ftfh=3)
     modelEnts=Sketchup.active_model.entities
     cutter=modelEnts.add_group

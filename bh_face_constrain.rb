@@ -24,6 +24,7 @@ class BH_FaceConstrain < Arch::BlockUpdateBehaviour
   def constrain_one_faceZ(f)
 
     base_z=@gp.bounds.min.z
+    return if f.vertices[0] == nil or !f.vertices[0].deleted?
     return if f.vertices[0].position.z<=0
     #return if f.normal.z == -1 and f.vertices[0].position.z <= base_z
     zscale=@gp.transformation.to_a[10]
@@ -52,6 +53,7 @@ class BH_FaceConstrain < Arch::BlockUpdateBehaviour
 
     p "face.z=#{vpos.z / $m2inch},length=#{length / $m2inch}, remain=#{remain / $m2inch}, offset=#{offset / $m2inch}"
     f.pushpull(offset)
+
   end
 
   def constrain_all()

@@ -42,10 +42,27 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
     if @cuts == nil
       return
     end
-    @cuts.locked =true
+    flrs=get_floor_data_string(@cuts)
+    entity.set_attribute("BuildingBlock","floors",flrs)
+    @cuts.locked = true
     @cuts.name=$genName
     ttArea=calAreas()
     entity.set_attribute("BuildingBlock","area",ttArea)
+  end
+
+  def get_floor_data_string(cuts)
+    flrs=[]
+    cuts.entities.each{|e|
+      if e.class == Sketchup::Face and e.normal.z == -1
+        verts=[]
+        e.vertices.each{|v|
+          verts<<v.position
+        }
+        verts.reverse!
+        flrs<<verts
+      end
+    }
+    return flrs
   end
 
   def cutFloor(subject ,ftfh, foffset=1)
