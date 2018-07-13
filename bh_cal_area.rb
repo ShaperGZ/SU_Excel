@@ -22,10 +22,14 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
   def onChangeEntity(e)
     super(e)
     invalidate
-
   end
+
   def onEraseEntity(e)
-    super(e)
+    removeCuts
+  end
+
+  def clear_and_update()
+
   end
 
   def invalidate()
@@ -39,6 +43,7 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
   end
 
   def invalidate_operation()
+    return if @gp.valid? == false
     entity=@gp
     p "invalidateing #{entity}"
     removeCuts()
@@ -51,6 +56,7 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
     @cuts.locked =true
     @cuts.name=$genName
     ttArea=calAreas()
+
     entity.set_attribute("BuildingBlock","area",ttArea)
 
     if @@hide_cuts
@@ -103,12 +109,26 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
       dup.erase!
       floors.erase!
     end
-    return cuts
+
+    del=[]
+    flrs=modelEnts.add_group()
+    flrs.transformation=cuts.transformation
+    cuts.entities.each{|e|
+      if e.class == Sketchup::Face
+        if e.normal.z == -1
+          flrs.entities.add_face(e.vertices)
+        end
+      end
+    }
+    cuts.erase!
+    #del.each{|e| e.erase!}
+
+    return flrs
   end
 
   def calAreas()
     ttArea=0
-    @cuts.entities.each{|e| ttArea += e.area if e.class == Sketchup::Face and e.normal.z==1 }
+    @cuts.entities.each{|e| ttArea += e.area if e.class == Sketchup::Face and e.normal.z==-1 }
     ttArea = ttArea / $m2inchsq
     return ttArea
   end

@@ -56,7 +56,7 @@ class BH_FaceConstrain < Arch::BlockUpdateBehaviour
   end
 
   def constrain_all()
-
+    return if @gp.valid? == false
     tops=[]
     p 'constrain all'
     @gp.entities.each{|e| tops<<e if e.class==Sketchup::Face and e.normal.z.abs==1

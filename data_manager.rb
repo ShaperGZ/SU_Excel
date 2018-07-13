@@ -26,8 +26,9 @@ module SUExcel
       program=entity.get_attribute("BuildingBlock","program")
       ftfh=entity.get_attribute("BuildingBlock","ftfh")
       area=entity.get_attribute("BuildingBlock","area")
-
-      @@data[entity.guid] = Array[zone,program,tower,ftfh,area]
+      bd_height=entity.get_attribute("BuildingBlock","bd_height")
+      bd_floors=entity.get_attribute("BuildingBlock","bd_floors")
+      @@data[entity.guid] = Array[zone,program,tower,ftfh,area,bd_height,bd_floors]
       updateToExcel()  if @enable_send_to_excel
       SUExcel.update_data_note()
     end
@@ -37,7 +38,6 @@ module SUExcel
     end
 
     def colorize(group,colorKey)
-      p 666666666666666666666666666666666
       return
       colors=SUExcel.colors
       color=colors[colorKey]

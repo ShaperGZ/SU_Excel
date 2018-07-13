@@ -48,7 +48,6 @@ class BH_Visualize < Arch::BlockUpdateBehaviour
         mats[key]= m
       end
     }
-    p "return mats:#{mats}"
     return mats
   end
 
@@ -75,7 +74,7 @@ class BH_Visualize < Arch::BlockUpdateBehaviour
   end
 
   #-------------------------------------------------
-  #self.mode=VisualModes.textured
+
   def initialize(gp,host)
     super(gp,host)
     @mode= DisplayModes.SCHEME
@@ -110,6 +109,10 @@ class BH_Visualize < Arch::BlockUpdateBehaviour
     save_material
     set_mode(@@mode)
     p "存完材质，切换到原模式"
+  end
+
+  def onChangeEntity(e)
+    SUExcel.update_area(e)
   end
 
   def set_mode(mode)

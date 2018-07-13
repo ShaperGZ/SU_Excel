@@ -3,6 +3,19 @@ $m2inchsq=1550.0031
 $genName="SCRIPTGENERATEDOBJECTS"
 
 module ArchUtil
+  # input gps: list of groups
+  # output is a group as result of a union of all input groups
+  def ArchUtil.union_groups(gps)
+    g0=gps[0].copy
+    for i in 1..gps.size-1
+      g1=gps[i].copy
+      g0=g0.union(g1)
+    end
+    return g0
+  end
+
+
+
   def ArchUtil.translate(ent,x,y,z)
     t=Geom::Transformation.translation([x*$m2inch, y*$m2inch, z*$m2inch])
     ent.transform! t

@@ -28,6 +28,7 @@ module Arch
       @host=host
     end
     def onEraseEntity(entity)
+      p "------deleting entity.guid=#{entity.guid}"
       @host.onEraseEntity(entity) if @host.enableUpdate
     end
     def onChangeEntity(entity)
@@ -117,6 +118,7 @@ module Arch
       @updators.each{|u| u.onChangeEntity(e)} if @enableUpdate
     end
     def onEraseEntity(e)
+      p 'on erase entity'
       @updators.each{|u| u.onEraseEntity(e)} if @enableUpdate
       @@created_objects.delete(e.guid) if @enableUpdate
     end

@@ -16,7 +16,7 @@ require File.expand_path('../building_block',__FILE__)
 require File.expand_path('../bh_face_constrain',__FILE__)
 require File.expand_path('../bh_cal_area',__FILE__)
 require File.expand_path('../bh_visualize',__FILE__)
-
+require File.expand_path('../bh_dimension',__FILE__)
 $enableOnEntityAdded=true
 $firstime=true
 $note = nil
@@ -29,7 +29,7 @@ module Sketchup::Excel
   cmd1.small_icon = "Images/icon1.jpg"
   cmd1.large_icon = "Images/icon1.jpg"
   cmd1.tooltip = "connect excel"
-  cmd1.status_bar_text = "开启传输Excel功能"
+  cmd1.status_bar_text = "First Connect"
   cmd1.menu_text = "excel"
 
   cmd2 = UI::Command.new("SetBuilding"){SUExcel.set_building()}
@@ -39,32 +39,32 @@ module Sketchup::Excel
   cmd2.status_bar_text = "Set building"
   cmd1.menu_text = "set building"
 
-  cmd3 = UI::Command.new("SetBuilding"){SUExcel.set_conceptMode()}
-  cmd3.small_icon = "Images/icon2.jpg"
-  cmd3.large_icon = "Images/icon2.jpg"
+  cmd3 = UI::Command.new("SetConceptMode"){SUExcel.set_conceptMode()}
+  cmd3.small_icon = "Images/ConceptMode.jpg"
+  cmd3.large_icon = "Images/ConceptMode.jpg"
   cmd3.tooltip = "conceptMode"
-  cmd3.status_bar_text = "set ConceptMode"
+  cmd3.status_bar_text = "Set Concept"
   cmd3.menu_text = "set ConceptMode"
 
-  cmd4 = UI::Command.new("SetBuilding"){SUExcel.set_textureMode()}
-  cmd4.small_icon = "Images/icon2.jpg"
-  cmd4.large_icon = "Images/icon2.jpg"
+  cmd4 = UI::Command.new("SetTexture"){SUExcel.set_textureMode()}
+  cmd4.small_icon = "Images/TextureMode.jpg"
+  cmd4.large_icon = "Images/TextureMode.jpg"
   cmd4.tooltip = "textureMode"
-  cmd4.status_bar_text = "set texture"
+  cmd4.status_bar_text = "Set texture"
   cmd4.menu_text = "set texture"
 
-  cmd5 = UI::Command.new("SetBuilding"){SUExcel.showOrHide()}
-  cmd5.small_icon = "Images/icon1.jpg"
-  cmd5.large_icon = "Images/icon1.jpg"
+  cmd5 = UI::Command.new("ShowOrHide"){SUExcel.showOrHide()}
+  cmd5.small_icon = "Images/ComponentMode.jpg"
+  cmd5.large_icon = "Images/ComponentMode.jpg"
   cmd5.tooltip = "showOrHide"
-  cmd5.status_bar_text = "showOrHide"
+  cmd5.status_bar_text = "show Or Hide"
   cmd5.menu_text = "showOrHide"
 
-  cmd6 = UI::Command.new("SetBuilding"){SUExcel.open_web()}
+  cmd6 = UI::Command.new("WEB"){SUExcel.open_web()}
   cmd6.small_icon = "Images/web.png"
   cmd6.large_icon = "Images/web.png"
   cmd6.tooltip = "web"
-  cmd6.status_bar_text = "web"
+  cmd6.status_bar_text = "Web Dialog"
   cmd6.menu_text = "web"
 
   toolbar1 = toolbar1.add_item cmd1
@@ -105,6 +105,7 @@ module SUExcel
     @@data_manager=val
   end
   def self.excel
+    @@excel = SUExcel::ExcelConnector.new if @@excel == nil
     @@excel
   end
   def self.excel=(val)
@@ -133,11 +134,14 @@ module SUExcel
     if @@data_manager==nil
       self._first_time_connect
     end
+
+    #确保每次新打开文件时，sketchup内的方案颜色不会清空
+    BH_Visualize.set_scheme_colors(@@colors,true) if Sketchup.active_model.materials.size == $Material_size
+
     prompts = ["分区","业态","栋","层高"]
     defaults = @@last_user_input
     program = ""
 
-    p "@@colors==nil #{@@colors == nil}"
     p "@@colors=#{@@colors}" if @@colors !=nil
 
     @@colors.keys.each{|key| 
@@ -186,10 +190,13 @@ module SUExcel
     end
     #把颜色dictionary set给 BH_Visualize类
     BH_Visualize.set_scheme_colors(@@colors)
+
     @@Sele.add_observer(MySelectionObserver.new)
 
+    Sketchup.add_observer(MyAppObserver.new)
+
     @@excel = SUExcel::ExcelConnector.new
-    @@data_manager=SUExcel::DataManager.new(SUExcel.excel)
+    @@data_manager= SUExcel::DataManager.new(SUExcel.excel)
     @@excel.connectExcel()
     @@is_first_time_connect = false
   end
@@ -236,10 +243,9 @@ module SUExcel
     entites = Sketchup.active_model.entities
 
     #递归找组
-    #@group = []
-    #entites.each{|e| @group+= SUExcel.find_group(e)}
-    #p "组总数：#{@group.count}"
-    #entites = @group
+    entites.each{|e| SUExcel.recursive_find_group(e)}
+    p "组总数：#{@group.size}"
+    entites = @group
 
     #清空非法数据
     #通常打开新文件时，原来的数据会留在记录里成为非法数据
@@ -249,6 +255,8 @@ module SUExcel
     # 会把过程中新建的entity也遍历
     ents=[]
     entites.each {|e| ents<<e}
+
+    BuildingBlock.enable_dynamic_update_base_area=false
     ents.each {|e|
       try_get=e.get_attribute("BuildingBlock","ftfh")
       if try_get!=nil
@@ -256,6 +264,9 @@ module SUExcel
         self.data_manager.updateData(e)
       end
     }
+    BuildingBlock.enable_dynamic_update_base_area=true
+    BuildingBlock.update_base_area
+
     @@data_manager.enable_send_to_excel =true
     @@data_manager.updateToExcel()
   end
@@ -303,18 +314,30 @@ module SUExcel
     end
   end
 
+  @is_open_web = false
   def self.open_web()
+    if @is_open_web
+      return
+    end
+
     if @@data_manager==nil
       self._first_time_connect
     end
+
+    @is_open_web = true
+    #确保每次新打开文件时，sketchup内的方案颜色不会清空
+    BH_Visualize.set_scheme_colors(@@colors,true) if Sketchup.active_model.materials.size == $Material_size
+
     @@dlg = UI::WebDialog.new("更改组信息", true, "ShowSketchupDotCom", 739, 641, 150, 150, true)
     file = File.join(__dir__,"/dialogs/test.html")
     @@dlg.set_file(file)
     @@dlg.show
     @@dlg.set_background_color("999999")
-
+    @@dlg.set_on_close{self.clear_dlg }
     selections = Sketchup.active_model.selection
-
+    @@dlg.execute_script("creat()")
+   # @@dlg.execute_script("document.getElementById('concept').options.add(new Option('retail', 'retail'))")
+    #@@dlg.execute_script("document.getElementById('concept').innerHTML='<option value='volvo'>Volvo</option>'")
     @@dlg.add_action_callback("SetInfo") {|dialog, params|
       info = params.split('_')
       @count = 0
@@ -323,8 +346,11 @@ module SUExcel
           @count += 1
           BuildingBlock.create_or_invalidate(selection,info[0],info[2],info[1],info[3].to_f)
           @@data_manager.updateData(selection)
-          UI.messagebox("设置成功！")
         end
+
+        #设置完即更新面积
+        self.update_area(selection)
+
       }
       if  @count == 0 || selections.empty?
         UI.messagebox("未选择任何组！")
@@ -332,42 +358,62 @@ module SUExcel
     }
   end
 
+  def self.clear_dlg()
+    @@dlg == nil
+    @is_open_web = false
+  end
+
   #发送消息到html
-  def self.send_info_to_html(zone,program,tower,ftfh)
+  def self.send_info_to_html(zone,program,tower,ftfh,area)
     return if @@dlg == nil
     @@dlg.execute_script("document.getElementById('id1').value='#{zone}'")
-    @@dlg.execute_script("document.getElementById('id2').value='#{program}'")
+   # @@dlg.execute_script("document.getElementById('id2').value='#{program}'")
     @@dlg.execute_script("document.getElementById('id3').value='#{tower}'")
     @@dlg.execute_script("document.getElementById('id4').value='#{ftfh}'")
+    if area != nil
+      @@dlg.execute_script("document.getElementById('id5').value='#{sprintf("%.2f",area)}'")
+    else
+      @@dlg.execute_script("document.getElementById('id5').value='#{nil}'")
+    end
   end
 
   #递归找组
-  def self.find_group(gp)
+  @group = []
+  def self.recursive_find_group(gp)
     return if gp.typename != "Group"
-    group = []
+    count = 0
     gp.entities.each{|ent|
       if ent.typename == "Group"
         if is_single_group(ent)
-          group << ent
+          @group << ent
         else
-          find_group(ent)
+          recursive_find_group(ent)
         end
+      else
+        count += 1
       end
     }
-    return group
+    if(count == gp.entities.size)
+      @group << gp
+    end
   end
 
   def self.is_single_group(ent)
-    a = 0
     ent.entities.each{|e|
-      if e.typename != "Group"
-        a += 1
+      if e.typename == "Group"
+        return false
       end
-    }
-    if a == ent.entities.size
       return true
+    }
+  end
+
+  def self.update_area(entity)
+    return if @@dlg == nil
+    area = entity.get_attribute("BuildingBlock","area")
+    if area != nil
+      @@dlg.execute_script("document.getElementById('id5').value='#{sprintf("%.2f",area)}'")
     else
-      return false
+      @@dlg.execute_script("document.getElementById('id5').value='#{nil}'")
     end
   end
 
@@ -376,17 +422,39 @@ end
 #选中事件观察者  鼠标选中单个组时触发
 class MySelectionObserver < Sketchup::SelectionObserver
   def onSelectionBulkChange(selection)
-    return if SUExcel.selection.size != 1
+    if SUExcel.selection.size != 1
+      SUExcel.send_info_to_html(nil,nil,nil,nil,nil)
+      return
+    end
     entity = SUExcel.selection[0]
-    return if entity.typename != "Group"
+    if entity.typename != "Group"
+      SUExcel.send_info_to_html(nil,nil,nil,nil,nil)
+      return
+    end
     zone = entity.get_attribute("BuildingBlock","zone")
     program = entity.get_attribute("BuildingBlock","program")
     tower = entity.get_attribute("BuildingBlock","tower")
     ftfh =  entity.get_attribute("BuildingBlock","ftfh")
-    SUExcel.send_info_to_html(zone,program,tower,ftfh)
+    area = entity.get_attribute("BuildingBlock","area")
+    SUExcel.send_info_to_html(zone,program,tower,ftfh,area)
   end
 end
 
+#打开文件或新建场景
+class MyAppObserver < Sketchup::AppObserver
+  def onOpenModel(model)
+    puts "打开文件"
+    Sketchup.active_model.selection.add_observer(MySelectionObserver.new)
+  end
+
+  def onNewModel(model)
+    puts "新建场景"
+    Sketchup.active_model.selection.add_observer(MySelectionObserver.new)
+  end
+end
+
+#初始的sketchup材质数量
+$Material_size = Sketchup.active_model.materials.size
 
 
 
