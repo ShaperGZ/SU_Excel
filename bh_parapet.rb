@@ -44,6 +44,7 @@ class BH_Parapet < Arch::BlockUpdateBehaviour
   def remove_all()
     @parapet_container.erase! if @parapet_container != nil and !@parapet_container.deleted?
     #@parapet_container = @gp.entities.add_group()
+    return if !@gp.valid?
     @parapet_container = Sketchup.active_model.entities.add_group()
     @parapet_container.transform! @gp.transformation
     @parapet_container.name =$genName

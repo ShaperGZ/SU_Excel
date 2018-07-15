@@ -12,8 +12,8 @@ class BuildingBlock < Arch::Block
     # 如果这个组已经创建过，不能再创建，因为已经有了监听器
     # 所以只更新其属性，然后invalidate
     # 否则就新创建一个 BuuildingBlock, 在构造器里会invalidate
-    if @@created_objects.key?(g.guid)
-      block=@@created_objects[g.guid]
+    if @@created_objects.key?(g)
+      block=@@created_objects[g]
       block.setAttr4(zone,tower,program,ftfh)
       block.invalidate
       return block
@@ -24,13 +24,16 @@ class BuildingBlock < Arch::Block
     end
   end
 
+
   def self.remove_deleted()
     hs=@@created_objects
     hs.keys.each{|k|
       gp=hs[k].gp
-      hs.delete(k) if gp==nil or gp.deleted?
+      hs.delete(k) if gp==nil or !gp.valid?
     }
   end
+
+
   
   def initialize(gp,zone="zone1",tower="t1",program="retail",ftfh=3)
     super(gp)
@@ -41,17 +44,36 @@ class BuildingBlock < Arch::Block
   end
 
   def add_updators()
+    # modeling aid
     @updators << BH_FaceConstrain.new(gp,self)
+
+    # procedural generation
     @updators << BH_CalArea.new(gp,self)
     @updators << BH_Parapet.new(gp,self)
+
+    # visualization
+    @updators << BH_Visualize.new(gp,self)
+
+    # calculatiob & data sync
+    @updators << BH_ExcelConduit.new(gp,self)
+    @updators << BH_BaseArea.new(gp,self)
+
+
+  end
+
+  def get_updator_by_type(type_name)
+    @updators.each{|u|
+      return u if u.class == type_name
+    }
+    return nil
   end
 
   def setAttr4(zone,tower,program,ftfh)
     dict= Hash.new
-    dict["zone"]=zone
-    dict["tower"]=tower
-    dict["program"]=program
-    dict["ftfh"]=ftfh
+    dict["pln_zone"]=zone
+    dict["pln_tower"]=tower
+    dict["pln_program"]=program
+    dict["bd_ftfh"]=ftfh
     setAttrByDict(dict)
   end
   def setAttrByDict(dict)
@@ -64,7 +86,8 @@ class BuildingBlock < Arch::Block
 
   def invalidate()
     @updators.each{|e| e.onClose(@gp)}
-    SUExcel.data_manager.onChangeEntity(@gp)
   end
+
+
 
 end

@@ -69,8 +69,8 @@ module Arch
       @@created_objects
     end
     def self.create_or_get(g)
-      if @@created_objects.key?(g.guid)
-        return @@created_objects[g.guid]
+      if @@created_objects.key?(g)
+        return @@created_objects[g]
       else
         return Block.new(g)
       end
@@ -104,23 +104,24 @@ module Arch
 
     #override the following methods
     def onOpen(e)
-      @updators.each{|u| u.onOpen(e)} if @enableUpdate
+      @updators.each{|u| u.onOpen(e)} if @enableUpdate and !e.deleted?
     end
     def onClose(e)
-      @updators.each{|u| u.onClose(e)} if @enableUpdate
+      @updators.each{|u| u.onClose(e)} if @enableUpdate and !e.deleted?
     end
     def onChangeEntity(e)
-      @updators.each{|u| u.onChangeEntity(e)} if @enableUpdate
+      @updators.each{|u| u.onChangeEntity(e)} if @enableUpdate and !e.deleted?
     end
     def onEraseEntity(e)
       @updators.each{|u| u.onEraseEntity(e)} if @enableUpdate
-      @@created_objects.delete(e.guid) if @enableUpdate
+      @@created_objects.delete(e) if @enableUpdate
+      p "erased #{e}"
     end
     def onElementAdded(entities, e)
-      @updators.each{|u| u.onElementAdded(entities, e)} if @enableUpdate
+      @updators.each{|u| u.onElementAdded(entities, e)} if @enableUpdate and !e.deleted?
     end
     def onElementModified(entities, e)
-      @updators.each{|u| u.onElementModified(entities, e)} if @enableUpdate
+      @updators.each{|u| u.onElementModified(entities, e)} if @enableUpdate and !e.deleted?
     end
   end
 end

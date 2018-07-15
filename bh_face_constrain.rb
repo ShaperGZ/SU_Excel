@@ -2,33 +2,37 @@
 class BH_FaceConstrain < Arch::BlockUpdateBehaviour
 
   def initialize(gp,host)
+    p 'f=initialized constrain face'
     super(gp,host)
   end
 
   def onClose(e)
+    p 'constrain face.onClose'
     constrain_all
   end
 
   def onChangeEntity(e)
+    p 'constrain face.onChangeEntity'
     constrain_all
   end
 
   def onElementAdded(entities, e)
+    p 'constrain face.onElementAdded'
     constrain_one_faceZ(e) if e.class == Sketchup::Face and e.normal.z.abs == 1
   end
 
   def onElementModified(entities, e)
+    p 'constrain face.onElementModified'
     constrain_one_faceZ(e) if e.class == Sketchup::Face and e.normal.z.abs == 1
   end
 
   def constrain_one_faceZ(f)
-
-    base_z=@gp.bounds.min.z
-    return if f.vertices[0] == nil or !f.vertices[0].deleted?
+    return if f.vertices[0] == nil
+    return if f.vertices[0].deleted?
     return if f.vertices[0].position.z<=0
-    #return if f.normal.z == -1 and f.vertices[0].position.z <= base_z
     zscale=@gp.transformation.to_a[10]
-    step=@gp.get_attribute("BuildingBlock","ftfh")
+    step=@gp.get_attribute("BuildingBlock","bd_ftfh").to_f
+    p "step = #{step}"
     step /= zscale
     return if step==nil
     step*=$m2inch
@@ -62,8 +66,8 @@ class BH_FaceConstrain < Arch::BlockUpdateBehaviour
     p 'constrain all'
     @gp.entities.each{|e| tops<<e if e.class==Sketchup::Face and e.normal.z.abs==1
     }
+    p "top.size=#{tops.size}"
     tops.each {|e|
-      #p e
       constrain_one_faceZ(e) }
   end
 end
