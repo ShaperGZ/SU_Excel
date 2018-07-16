@@ -19,6 +19,7 @@ require File.expand_path('../bh_visualize',__FILE__)
 require File.expand_path('../bh_parapet',__FILE__)
 require File.expand_path('../bh_excel_conduit',__FILE__)
 require File.expand_path('../bh_base_area',__FILE__)
+require File.expand_path('../bh_dimension',__FILE__)
 
 $enableOnEntityAdded=true
 $firstime=true
@@ -42,9 +43,32 @@ module Sketchup::Excel
   cmd2.status_bar_text = "Set building"
   cmd1.menu_text = "set building"
 
+  cmd3 = UI::Command.new("SetConceptMode"){SUExcel.set_conceptMode()}
+  cmd3.small_icon = "Images/ConceptMode.jpg"
+  cmd3.large_icon = "Images/ConceptMode.jpg"
+  cmd3.tooltip = "conceptMode"
+  cmd3.status_bar_text = "Set Concept"
+  cmd3.menu_text = "set ConceptMode"
+
+  cmd4 = UI::Command.new("SetTexture"){SUExcel.set_textureMode()}
+  cmd4.small_icon = "Images/TextureMode.jpg"
+  cmd4.large_icon = "Images/TextureMode.jpg"
+  cmd4.tooltip = "textureMode"
+  cmd4.status_bar_text = "Set texture"
+  cmd4.menu_text = "set texture"
+
+  cmd5 = UI::Command.new("ShowOrHide"){SUExcel.toggle_generated_objects()}
+  cmd5.small_icon = "Images/showhide.png"
+  cmd5.large_icon = "Images/showhide.png"
+  cmd5.tooltip = "showOrHide"
+  cmd5.status_bar_text = "show Or Hide"
+  cmd5.menu_text = "showOrHide"
 
   toolbar1 = toolbar1.add_item cmd1
   toolbar1 = toolbar1.add_item cmd2
+  toolbar1 = toolbar1.add_item cmd3
+  toolbar1 = toolbar1.add_item cmd4
+  toolbar1 = toolbar1.add_item cmd5
   toolbar1.show
 end
 
@@ -137,13 +161,14 @@ module SUExcel
     end
 
     if selected_groups[0].get_attribute("BuildingBlock","bd_ftfh")!=nil
-      default = []
+      defaults = []
       indices = ["pln_zone","pln_tower","pln_program","bd_ftfh"]
       indices.each {|i|
-        default<<selected_groups[0].get_attribute("BuildingBlock",i).to_s
+        defaults<<selected_groups[0].get_attribute("BuildingBlock",i)
       }
+      p "defaults = #{defaults}"
     else
-      default = @@last_user_input
+      defaults = @@last_user_input
     end
 
     input = UI.inputbox(prompts, defaults, list, "Set Building")
@@ -158,7 +183,20 @@ module SUExcel
     }
   end
 
+  def self.set_conceptMode()
+    BH_Visualize.set_modes_concept
+  end
 
+  def self.set_textureMode()
+    BH_Visualize.set_modes_texture
+  end
+
+  @@visible=true
+  def SUExcel.toggle_generated_objects
+    @@visible =!@@visible
+    BH_CalArea.show(@@visible)
+    BH_Parapet.show(@@visible)
+  end
 
   def self.batch_add_observers()
     @@excel_manager=SUExcel::ExcelManager.get_singleton()
@@ -177,7 +215,7 @@ module SUExcel
     ents=[]
     entites.each {|e| ents<<e}
     ents.each {|e|
-      if e.typename == "Group" and e.get_attribute("BuildingBlock","bd_ftfh") != nil
+      if  e.valid? and e.class == Sketchup::Group and e.get_attribute("BuildingBlock","bd_ftfh") != nil
         zone=e.get_attribute("BuildingBlock","pln_zone")
         tower=e.get_attribute("BuildingBlock","pln_tower")
         program=e.get_attribute("BuildingBlock","pln_program")
@@ -188,7 +226,7 @@ module SUExcel
     }
     @@excel_manager.enable_send_to_excel =true
     BH_BaseArea.enable_dynamic_update_base_area=true
-    @@excel_manager.updateToExcel()
+    @@excel_manager.updateInstanceData()
     BH_BaseArea.update_base_area
   end
 

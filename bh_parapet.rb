@@ -1,10 +1,23 @@
 
 class BH_Parapet < Arch::BlockUpdateBehaviour
+  @@visible=true
+  def self.show(visible)
+    @@visible=visible
+    return 0 if BuildingBlock.created_objects.size < 1
+    BuildingBlock.created_objects.each{|ent,bb|
+      bh=bb.get_updator_by_type(self)
+      if bh!=nil
+        parapets=bh.parapet_container
+        parapets.hidden=visible if parapets !=nil
+      end
+    }
+  end
+
+  attr_accessor :parapet_container
   attr_accessor :parapets
   def initialize(gp,host)
     super(gp,host)
     @parapet_container = nil
-    #@parapet_container.name=
     @parapets=Hash.new
   end
 

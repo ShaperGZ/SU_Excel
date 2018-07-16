@@ -29,7 +29,9 @@ class BH_ExcelConduit < Arch::BlockUpdateBehaviour
   def onEraseEntity(entity)
     super(entity)
     em = SUExcel::ExcelManager.get_singleton
+    p " psot delete em.keys=#{em.data.keys}"
     em.deleteUpdate(@gp)
+    p " psot delete em.keys=#{em.data.keys}"
   end
 
 end

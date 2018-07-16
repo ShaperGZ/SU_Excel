@@ -85,7 +85,7 @@ module Arch
       add_entsObserver(EntsObs.new(self))
       add_entObserver(EntObs.new(self))
       add_entObserver(InstObs.new(self))
-      @@created_objects[gp.guid]=self
+      @@created_objects[gp]=self
     end
     def add_entObserver(observer)
       obs=@gp.add_observer(observer)
@@ -102,21 +102,37 @@ module Arch
       @enableUpdate=val
     end
 
-    #override the following methods
+    # override the following methods
     def onOpen(e)
-      @updators.each{|u| u.onOpen(e)} if @enableUpdate and !e.deleted?
+      @updators.each{|u| u.onOpen(e)} if @enableUpdate and @gp.valid?
     end
     def onClose(e)
-      @updators.each{|u| u.onClose(e)} if @enableUpdate and !e.deleted?
+      @updators.each{|u| u.onClose(e)} if @enableUpdate and @gp.valid?
     end
+
     def onChangeEntity(e)
-      @updators.each{|u| u.onChangeEntity(e)} if @enableUpdate and !e.deleted?
+      # 当删除物件的时候这个e会变成另一个地址，所以检查e组是否还存在要靠@gp.valid?
+      if @enableUpdate and @gp.valid?
+        count=0
+        @updators.each{|u|
+          p "executed u.gp:#{u.gp} u.valid=#{u.gp.valid?}"
+          u.onChangeEntity(e)
+        }
+      else
+        p "onChangeEntity group = #{e} , e.deleted=#{e.deleted?}, e.valid=#{e.valid?}"
+      end
     end
+
     def onEraseEntity(e)
-      @updators.each{|u| u.onEraseEntity(e)} if @enableUpdate
-      @@created_objects.delete(e) if @enableUpdate
-      p "erased #{e}"
+      # 删除时输入的e不等于@gp, 要用@gp来删除
+      # p "onErase : e=#{e} @gp=#{@gp}"
+      # 结果："onErase : e=#<Sketchup::Group:0x148d8548> @gp=#<Deleted Entity:0xee74bd0>"
+      @updators.each{|u| u.onEraseEntity(@gp)} if @enableUpdate
+      if @enableUpdate
+        @@created_objects.delete(@gp)
+      end
     end
+
     def onElementAdded(entities, e)
       @updators.each{|u| u.onElementAdded(entities, e)} if @enableUpdate and !e.deleted?
     end

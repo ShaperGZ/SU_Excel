@@ -149,7 +149,7 @@ module ArchUtil
   def ArchUtil.genFlrs(ent,ftfh=3,thickness=0.8)
     plns=genFlrPlns(ent,ftfh)
     if plns==nil
-      p '!Intersection failed'
+      #p '!Intersection failed'
       return nil
     end
     flrs=getIntersectSolidPlanes(ent.copy,plns,thickness)
@@ -166,6 +166,22 @@ module ArchUtil
     end
 
     return [flrs,tt_area/$m2inchsq]
+  end
+
+  def ArchUtil.getEntsByIDs(entities, ids)
+    ents=[]
+    entities.each{|e|
+      ents<<e if ids.include?(e.entityID)
+    }
+    return nil if ents.size<1
+    return ents
+  end
+
+  def ArchUtil.getEntByID(entities, id)
+    entities.each{|e|
+      return e if e.entityID==id
+    }
+    return nil
   end
 
   def ArchUtil.getMaterial(name)

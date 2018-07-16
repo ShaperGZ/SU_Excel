@@ -9,6 +9,7 @@ class BH_BaseArea < Arch::BlockUpdateBehaviour
   end
 
   def self.cal_base_area()
+    return 0 if BuildingBlock.created_objects.size < 1
     # 1. 把全部建筑放进一个list里
     blocks=BuildingBlock.created_objects.values.dup
     gps=[]

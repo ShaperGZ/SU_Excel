@@ -18,6 +18,7 @@ class BuildingBlock < Arch::Block
       block.invalidate
       return block
     else
+      return if g.name==$genName
       b=BuildingBlock.new(g,zone,tower,program,ftfh)
       b.invalidate
       return b
@@ -36,7 +37,9 @@ class BuildingBlock < Arch::Block
 
   
   def initialize(gp,zone="zone1",tower="t1",program="retail",ftfh=3)
+    #p "(0) PreCrt created_objects.size=#{BuildingBlock.created_objects.size}"
     super(gp)
+    #p "(1) PostCrt created_objects.size=#{BuildingBlock.created_objects.size}"
     setAttr4(zone,tower,program,ftfh)
     add_updators()
     # 以前是每次构建就invalidate,现在构建后要手动调用invalidate
@@ -54,7 +57,8 @@ class BuildingBlock < Arch::Block
     # visualization
     @updators << BH_Visualize.new(gp,self)
 
-    # calculatiob & data sync
+    # calculation & data sync
+    @updators << BH_Dimension.new(gp, self)
     @updators << BH_ExcelConduit.new(gp,self)
     @updators << BH_BaseArea.new(gp,self)
 
@@ -88,6 +92,11 @@ class BuildingBlock < Arch::Block
     @updators.each{|e| e.onClose(@gp)}
   end
 
+  # def onEraseEntity(e)
+  #   #p "(0) PreDel created_objects.size=#{BuildingBlock.created_objects.size}"
+  #   super(e)
+  #   #p "(1) PostDel created_objects.size=#{BuildingBlock.created_objects.size}"
+  # end
 
 
 end

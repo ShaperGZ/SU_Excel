@@ -1,6 +1,19 @@
 
 class BH_CalArea < Arch::BlockUpdateBehaviour
+  @@visible=true
+  def self.show(visible)
+    @@visible=visible
+    return 0 if BuildingBlock.created_objects.size < 1
+    BuildingBlock.created_objects.each{|ent,bb|
+      bh=bb.get_updator_by_type(self)
+      if bh!=nil
+        cuts=bh.cuts
+        cuts.hidden=visible if cuts !=nil
+      end
+    }
+  end
 
+  attr_accessor :cuts
   def initialize(gp,host)
     super(gp,host)
   end
@@ -49,6 +62,7 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
     ttArea=calAreas()
     entity.set_attribute("BuildingBlock","bd_area",ttArea)
   end
+
 
   def get_floor_data_string(cuts)
     flrs=[]
