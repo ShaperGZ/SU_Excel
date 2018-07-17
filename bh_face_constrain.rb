@@ -11,7 +11,9 @@ class BH_FaceConstrain < Arch::BlockUpdateBehaviour
     constrain_all
   end
 
-  def onChangeEntity(e)
+  def onChangeEntity(e, invalidated)
+    return if not invalidated[2]
+    p '-> BH_FaceConstrain.onChangeEntity'
     #p 'constrain face.onChangeEntity'
     constrain_all
   end
@@ -33,10 +35,10 @@ class BH_FaceConstrain < Arch::BlockUpdateBehaviour
     zscale=@gp.transformation.zscale
 
 
-    p "zscale=#{zscale}"
+    #p "zscale=#{zscale}"
 
     step=@gp.get_attribute("BuildingBlock","bd_ftfh").to_f
-    p "step = #{step}"
+    #p "step = #{step}"
     step /= zscale
     return if step==nil
     step*=$m2inch
@@ -55,17 +57,17 @@ class BH_FaceConstrain < Arch::BlockUpdateBehaviour
     offset *= f.normal.z
     #offset= step - offset if f.normal.z == -1
 
-    p "face.z=#{vpos.z / $m2inch},length=#{length / $m2inch}, remain=#{remain / $m2inch}, offset=#{offset / $m2inch}"
+    #p "face.z=#{vpos.z / $m2inch},length=#{length / $m2inch}, remain=#{remain / $m2inch}, offset=#{offset / $m2inch}"
     f.pushpull(offset)
   end
 
   def constrain_all()
     return if @gp.deleted?
     tops=[]
-    p 'constrain all'
+    #p 'constrain all'
     @gp.entities.each{|e| tops<<e if e.class==Sketchup::Face and e.normal.z.abs==1
     }
-    p "top.size=#{tops.size}"
+    #p "top.size=#{tops.size}"
     tops.each {|e|
       constrain_one_faceZ(e,false) }
   end

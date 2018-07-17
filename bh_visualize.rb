@@ -23,7 +23,7 @@ class BH_Visualize < Arch::BlockUpdateBehaviour
   @@scheme_colors_profile_path=nil
   def self.scheme_colors
     @@scheme_colors=BH_Visualize.get_color_materials
-    p @@scheme_colors
+    #p @@scheme_colors
     return @@scheme_colors
   end
 
@@ -31,7 +31,7 @@ class BH_Visualize < Arch::BlockUpdateBehaviour
   # 阅读颜色配置文件
   # 配置文件的位置实际由SUExcel.profile_path()提供
   def self.get_color_materials(profile_path=nil)
-    p "reading color profile"
+    #p "reading color profile"
     profile = Hash.new    #颜色字典
     if profile_path ==nil
       profile_path = SUExcel.profile_path
@@ -49,7 +49,7 @@ class BH_Visualize < Arch::BlockUpdateBehaviour
   end
 
   def self._create_scheme_color_materials(dict)
-    p "创建颜色"
+    #p "创建颜色"
     mats=Hash.new
     model = Sketchup.active_model
     materials = model.materials
@@ -101,9 +101,10 @@ class BH_Visualize < Arch::BlockUpdateBehaviour
     @attr_key="ttr_face_textures"
     @mode = DisplayModes::SCHEME
     #TODO: add clones for different visual representations
-
+    # save textures on creation
+    _load_textures
+    _save_textures
     #@last_mode
-    puts "Visualize 初始化！"
   end
 
   # 监听行为
@@ -111,24 +112,23 @@ class BH_Visualize < Arch::BlockUpdateBehaviour
   def onOpen(e)
     @is_opened =true
     set_mode(DisplayModes::TEXTURED)
-    p "点开模型，切换到贴图模式"
   end
 
   def onClose(e)
-    p 'visualize.onClose'
+    #p 'visualize.onClose'
     if @is_opened
-      p 'visualize.onClose->_save_texture'
+      #p 'visualize.onClose->_save_texture'
       _save_textures
     end
     @is_opened=false
 
-    p 'visualize.onClose->set_mode'
+    #p 'visualize.onClose->set_mode'
     set_mode(@@mode)
-    p 'visualize.onClose->end'
+    #p 'visualize.onClose->end'
   end
 
-  def onChangeEntity(e)
-    super(e)
+  def onChangeEntity(e, invalidated)
+    super(e, invalidated)
   end
 
   def set_mode(mode)
@@ -163,12 +163,17 @@ class BH_Visualize < Arch::BlockUpdateBehaviour
 
 
   def _save_textures()
-    p '!! saved texture'
+    #p '!! saved texture'
     key=@attr_key
     dict=Hash.new
     @gp.entities.each_with_index{|f,i|
     if f.class == Sketchup::Face
-      mat=f.material.name
+      if f.material == nil
+        mat= "white"
+      else
+        mat=f.material.name
+      end
+
       if !dict.include? mat
         dict[mat]=[i]
       else
@@ -177,7 +182,7 @@ class BH_Visualize < Arch::BlockUpdateBehaviour
     end
     }
     @gp.set_attribute("BuildingBlock",key,dict.to_a)
-    p @gp.get_attribute("BuildingBlock",key)
+    #p @gp.get_attribute("BuildingBlock",key)
   end
 
   def _load_textures()
@@ -185,7 +190,7 @@ class BH_Visualize < Arch::BlockUpdateBehaviour
     has_texture=false if !@gp.valid?
     key=@attr_key
     dict=@gp.get_attribute("BuildingBlock",key)
-    p "dict=#{dict}"
+    #p "dict=#{dict}"
     has_texture=false if dict==nil
 
     if has_texture
@@ -193,7 +198,7 @@ class BH_Visualize < Arch::BlockUpdateBehaviour
       dict.each{|i|
         key = i[0]
         mat=ArchUtil.getMaterial(key)
-        mat = "purple" if mat ==nil
+        mat = "white" if mat ==nil
         faceIDs= i[1]
         faceIDs.each{|i|
           f=@gp.entities[i]

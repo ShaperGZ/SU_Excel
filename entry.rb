@@ -20,6 +20,7 @@ require File.expand_path('../bh_parapet',__FILE__)
 require File.expand_path('../bh_excel_conduit',__FILE__)
 require File.expand_path('../bh_base_area',__FILE__)
 require File.expand_path('../bh_dimension',__FILE__)
+require File.expand_path('../bh_clear_naked_edge',__FILE__)
 
 $enableOnEntityAdded=true
 $firstime=true

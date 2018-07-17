@@ -5,7 +5,12 @@ $genName="SCRIPTGENERATEDOBJECTS"
 module ArchUtil
   # input gps: list of groups
   # output is a group as result of a union of all input groups
-  def ArchUtil.union_groups(gps)
+  def ArchUtil.union_groups(igps)
+    gps=[]
+    igps.each{|e|
+      gps<<e if e!=nil and e.class==Sketchup::Group and e.valid?
+    }
+
     g0=gps[0].copy
     for i in 1..gps.size-1
       g1=gps[i].copy
@@ -118,6 +123,30 @@ module ArchUtil
     faces.each { |e| e.pushpull(thickness)}
     xpln = plns.intersect(ent)
     return xpln
+  end
+
+  def ArchUtil.invalidated_transformation?(t1,t2)
+    result=[false,false,false]
+    result[0]=true if (  t1.origin != t2.origin)
+    result[1]=true if (  t1.rotx != t2.rotx or
+                          t1.roty != t2.roty or
+                          t1.rotz != t2.rotz)
+    result[2]=true if (  t1.xscale != t2.xscale or
+                          t1.yscale != t2.yscale or
+                          t1.zscale != t2.zscale)
+    return result
+  end
+
+  def ArchUtil.equal_transformation?(t1,t2,position=true,rotation=true,scale=true)
+    return false if position and (t1.origin != t2.origin)
+    return false if rotation and (t1.rotx != t2.rotx or
+                                  t1.roty != t2.roty or
+                                  t1.rotz != t2.rotz)
+
+    return false if scale and ( t1.xscale != t2.xscale or
+                                t1.yscale != t2.yscale or
+                                t1.zscale != t2.zscale)
+    return true
   end
 
   def ArchUtil.genFlrsSlow(ent,ftfh=3,thickness=0.8)

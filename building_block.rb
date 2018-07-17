@@ -48,6 +48,7 @@ class BuildingBlock < Arch::Block
 
   def add_updators()
     # modeling aid
+    @updators << BH_ClearNakedEdge.new(gp,self)
     @updators << BH_FaceConstrain.new(gp,self)
 
     # procedural generation
@@ -91,12 +92,6 @@ class BuildingBlock < Arch::Block
   def invalidate()
     @updators.each{|e| e.onClose(@gp)}
   end
-
-  # def onEraseEntity(e)
-  #   #p "(0) PreDel created_objects.size=#{BuildingBlock.created_objects.size}"
-  #   super(e)
-  #   #p "(1) PostDel created_objects.size=#{BuildingBlock.created_objects.size}"
-  # end
 
 
 end

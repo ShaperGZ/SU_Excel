@@ -18,6 +18,9 @@ class BH_BaseArea < Arch::BlockUpdateBehaviour
     }
     # 2. 用 ArchUtil.union_groups(gps) 得出其union合体组
     union=ArchUtil.union_groups(gps)
+    if union == nil
+      p "union == nil"
+    end
     xscale=union.transformation.xscale
     yscale=union.transformation.yscale
     scale_factor=xscale*yscale
@@ -41,7 +44,7 @@ class BH_BaseArea < Arch::BlockUpdateBehaviour
   def self.update_base_area()
     return if !@@enable_dynamic_update_base_area
     base_area=self.cal_base_area()
-    p "updating base area = #{base_area}"
+    #p "updating base area = #{base_area}"
     em=SUExcel::ExcelManager.get_singleton
     em.update_base_area(sprintf("%.2f",base_area))
   end
@@ -59,7 +62,8 @@ class BH_BaseArea < Arch::BlockUpdateBehaviour
     BH_BaseArea.update_base_area
   end
 
-  def onChangeEntity(e)
+  def onChangeEntity(e, invalidated)
+    p '-> BH_CalArea.onChangeEntity'
     BH_BaseArea.update_base_area
   end
 end

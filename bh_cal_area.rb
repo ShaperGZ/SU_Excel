@@ -27,9 +27,17 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
     invalidate
 
   end
-  def onChangeEntity(e)
-    super(e)
+  def onChangeEntity(e, invalidated)
+    p '-> BH_CalArea.onChangeEntity'
+    super(e, invalidated)
     invalidate
+    # TODO:move cuts to new position if no scale
+    # if invalidated[2]
+    #   invalidate
+    # else
+    #   # move cuts to new group position
+    #   @cuts
+    # end
   end
   def onEraseEntity(e)
     removeCuts
@@ -38,16 +46,16 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
   def invalidate()
     return if @host==nil
     @host.enableUpdate = false
-    model= Sketchup.active_model
-    model.start_operation('invalidate')
+    #model= Sketchup.active_model
+    #model.start_operation('invalidate')
     invalidate_operation
-    model.commit_operation
+    #model.commit_operation
     @host.enableUpdate = true
   end
 
   def invalidate_operation()
     entity=@gp
-    p "invalidateing #{entity}"
+    #p "invalidateing #{entity}"
     removeCuts()
     ftfh=entity.get_attribute("BuildingBlock","bd_ftfh")
     floors = cutFloor(entity,ftfh)
@@ -55,8 +63,11 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
     if @cuts == nil
       return
     end
-    flrs=get_floor_data_string(@cuts)
-    entity.set_attribute("BuildingBlock","geo_floors",flrs)
+
+    #TODO: set floor to attibute, currently failed because holes
+    #flrs=get_floor_data_string(@cuts)
+    ##entity.set_attribute("BuildingBlock","geo_floors",flrs)
+
     @cuts.locked = true
     @cuts.name=$genName
     ttArea=calAreas()
@@ -123,16 +134,40 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
     if cuts==nil
       dup.erase!
       floors.erase!
+      return nil
     end
 
-    flrs=Sketchup.active_model.entities.add_group
-    flrs.transformation=cuts.transformation
+
+    del=[]
     cuts.entities.each{|e|
-      if e.class==Sketchup::Face and e.normal.z == -1
-        flrs.entities.add_face(e.vertices)
+      if e.class == Sketchup::Edge
+        pass=false
+        e.faces.each{|f|
+          if f.normal.z==-1
+            pass=true
+            break
+          end
+        }
+
+        del<<e if not pass
+
       end
     }
-    cuts.erase!
+    for i in 0..del.size-1
+      del[i].erase! if del[i] !=nil and del[i].valid?
+    end
+
+    # faces=[]
+    # cuts.entities.each{|e|
+    #   if e.class==Sketchup::Face and e.normal.z == -1
+    #     faces<<e
+    #   end
+    # }
+    # flrs=Sketchup.active_model.entities.add_group(faces)
+    # flrs.transformation=cuts.transformation
+    #cuts.erase!
+
+    flrs=cuts
 
     return flrs
   end

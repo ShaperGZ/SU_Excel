@@ -4,10 +4,16 @@ module Arch
       @host=host
     end
     def onElementAdded(entities, entity)
+      model= Sketchup.active_model
+      model.start_operation('onElementAdded')
       @host.onElementAdded(entities,entity) if @host.enableUpdate
+      model.commit_operation
     end
     def onElementModified(entities, entity)
+      model= Sketchup.active_model
+      model.start_operation('onElementModified')
       @host.onElementModified(entities, entity) if @host.enableUpdate
+      model.commit_operation
     end
   end
 
@@ -16,22 +22,47 @@ module Arch
       @host=host
     end
     def onOpen(instance)
+      model= Sketchup.active_model
+      model.start_operation('onOpen')
       @host.onOpen(instance) if @host.enableUpdate
+      model.commit_operation
     end
     def onClose(instance)
+      model= Sketchup.active_model
+      model.start_operation('onClose')
       @host.onClose(instance) if @host.enableUpdate
+      model.commit_operation
+
     end
   end
 
   class EntObs < Sketchup::EntityObserver
+
     def initialize(host)
       @host=host
+      @last_transformation=@host.gp.transformation.clone
     end
     def onEraseEntity(entity)
+      model= Sketchup.active_model
+      model.start_operation('onErase')
       @host.onEraseEntity(entity) if @host.enableUpdate
+      model.commit_operation
     end
     def onChangeEntity(entity)
-      @host.onChangeEntity(entity) if @host.enableUpdate
+      invalidated=ArchUtil.invalidated_transformation?(@last_transformation, @host.gp.transformation)
+      model= Sketchup.active_model
+      model.start_operation('invalidate')
+      sign="---"
+      for i in 0..2
+        sign[i]= '+' if invalidated[i]
+      end
+      p "#{sign} [ EntObs.onChangeEntity e:#{entity} ] host.gp:#{@host.gp}"
+      @host.onChangeEntity(entity,invalidated) if @host.enableUpdate
+      @last_transformation = @host.gp.transformation.clone
+      model.commit_operation
+
+
+
     end
   end
 
@@ -50,7 +81,7 @@ module Arch
     def onClose(e)
     end
 
-    def onChangeEntity(e)
+    def onChangeEntity(e, invalidated)
     end
 
     def onEraseEntity(e)
@@ -110,16 +141,17 @@ module Arch
       @updators.each{|u| u.onClose(e)} if @enableUpdate and @gp.valid?
     end
 
-    def onChangeEntity(e)
+    # invalidated 是一个长度为三的bool array, 指明那种变化已过期
+    # invalidated: [pos,rot,scale]
+    def onChangeEntity(e,invalidated)
       # 当删除物件的时候这个e会变成另一个地址，所以检查e组是否还存在要靠@gp.valid?
       if @enableUpdate and @gp.valid?
-        count=0
         @updators.each{|u|
-          p "executed u.gp:#{u.gp} u.valid=#{u.gp.valid?}"
-          u.onChangeEntity(e)
+          #p "executed u.gp:#{u.gp} u.valid=#{u.gp.valid?}"
+          u.onChangeEntity(e,invalidated)
         }
       else
-        p "onChangeEntity group = #{e} , e.deleted=#{e.deleted?}, e.valid=#{e.valid?}"
+        #p "onChangeEntity group = #{e} , e.deleted=#{e.deleted?}, e.valid=#{e.valid?}"
       end
     end
 

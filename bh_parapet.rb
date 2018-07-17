@@ -33,7 +33,8 @@ class BH_Parapet < Arch::BlockUpdateBehaviour
     invalidate()
   end
 
-  def onChangeEntity(e)
+  def onChangeEntity(e, invalidated)
+    p '-> BH_FaceConstrain.onChangeEntity'
     invalidate()
   end
 

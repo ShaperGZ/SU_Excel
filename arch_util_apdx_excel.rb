@@ -11,17 +11,17 @@ module ArchUtil
     end
 
     def connect_dynamic(workbook, sheet='sheet1')
-      #begin
-      p "Trying to connect to workbook: #{workbook}"
-      @excel = WIN32OLE.connect("excel.application")
-      p "@excel=#{@excel}"
-      @work_book = @excel.Workbooks(workbook)
-      p "@work_book=#{@work_book}"
-      @work_sheets[sheet] = @work_book.Worksheets(sheet)
-      p "已连接到#{@work_sheets[sheet].name}"
-      #rescue
-      #  p 'failed to connect to excel'
-      #end
+      begin
+        p "Trying to connect to workbook: #{workbook}"
+        @excel = WIN32OLE.connect("excel.application")
+        p "@excel=#{@excel}"
+        @work_book = @excel.Workbooks(workbook)
+        p "@work_book=#{@work_book}"
+        @work_sheets[sheet] = @work_book.Worksheets(sheet)
+        p "已连接到#{@work_sheets[sheet].name}"
+      rescue
+       p "failed to connect to excel #{workbook}.#{sheet}"
+      end
 
 
 

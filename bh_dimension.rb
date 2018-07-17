@@ -8,8 +8,10 @@ class BH_Dimension < Arch::BlockUpdateBehaviour
     invalidate
   end
 
-  def onChangeEntity(e)
-    super(e)
+  def onChangeEntity(e, invalidated)
+    return if not invalidated[2]
+    p '-> BH_Dimension.onChangeEntity'
+    super(e, invalidated)
     invalidate
   end
 
@@ -21,7 +23,7 @@ class BH_Dimension < Arch::BlockUpdateBehaviour
     #ftfh=@gp.get_attribute("BuildingBlock","ftfh")
     # 3. 把高度信息和层数set attribute到组里
     return if @gp.valid? == false
-    p "set高度和楼层数"
+    #p "set高度和楼层数"
     group = @gp
     bd_height = (group.bounds.max.z-group.bounds.min.z)/ $m2inch
     group.set_attribute("BuildingBlock","bd_height",sprintf("%.2f",bd_height))
