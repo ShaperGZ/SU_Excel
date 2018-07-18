@@ -6,9 +6,10 @@ module SUExcel
       @@created_objects
     end
 
-
     def WebDialogWrapper.get(name)
       if @@created_objects.key?(name)
+        #TODO: 检查拿出来的dialog是否正确
+        # 如果不正确就要return nil
         return @@created_objects[name]
       end
       return nil
@@ -29,16 +30,22 @@ module SUExcel
 
     #查询一个窗口是否被创建过
     def WebDialogWrapper.created?(dialog)
+      # TODO: 检查是否还正确
+      # 如果不正确就删除item
       return @@created_objects.include?dialog
     end
 
     # 创建时会加入到静态数据列已做管理
     def initialize(name)
       @name=name
-      SUExcel::WebDialogWrapper.set(name, self)
+      # dangerous recursion
+      # SUExcel::WebDialogWrapper.set(name, self)
+      @@created_objects[name] = self
       Sketchup.active_model.selection.add_observer(WebDialogSelectionObserver.new(self))
       # do somthing
     end
+
+    #----------------- instance ----------------------
 
     # 切换显隐叫toggle
     @visible=false
@@ -46,8 +53,6 @@ module SUExcel
       @visible = !visible
       #do somthing
     end
-
-    #----------------- instance ----------------------
 
     # 继承时无需写super,因为需要按需判断和设置@visible状态
     def open()

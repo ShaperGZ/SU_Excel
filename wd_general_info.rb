@@ -11,6 +11,7 @@ end
 
 
 class WD_GeneralInfo < SUExcel::WebDialogWrapper
+
   def self.create_or_get(name)
     dialog=SUExcel::WebDialogWrapper.get(WD_GeneralInfo.name)
     # TODO: 确认dialog如何检查正确性
@@ -29,7 +30,7 @@ class WD_GeneralInfo < SUExcel::WebDialogWrapper
   # override WebDialog.open
   def open()
     return if @visible
-    @@excel_manager=SUExcel::ExcelManager.get_singleton()
+    #@@excel_manager=SUExcel::ExcelManager.get_singleton()
 
     @dlg = UI::WebDialog.new("更改组信息", true, "ShowSketchupDotCom", 739, 641, 150, 150, true)
     file = File.join(__dir__,"/dialogs/test.html")
@@ -94,6 +95,7 @@ class WD_GeneralInfo < SUExcel::WebDialogWrapper
 
   # 按下确认键的动作
   def onConfirm(params)
+    excel_manager=SUExcel::ExcelManager.get_singleton
     p "dialog confirmed! params=#{params}"
     info = params.split('_')
     selections = Sketchup.active_model.selection
@@ -103,7 +105,7 @@ class WD_GeneralInfo < SUExcel::WebDialogWrapper
     end
 
     # 防止更新底面积和同步excel
-    @@excel_manager.enable_send_to_excel =false
+    excel_manager.enable_send_to_excel =false
     BH_BaseArea.enable_dynamic_update_base_area=false
 
     selections.each{|e|
@@ -112,8 +114,8 @@ class WD_GeneralInfo < SUExcel::WebDialogWrapper
       end
     }
     # 批量更新底面积和同步excel
-    @@excel_manager.enable_send_to_excel =true
-    @@excel_manager.updateInstanceData()
+    excel_manager.enable_send_to_excel =true
+    excel_manager.updateInstanceData()
     BH_BaseArea.enable_dynamic_update_base_area=true
     BH_BaseArea.update_base_area
 
