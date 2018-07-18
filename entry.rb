@@ -9,6 +9,12 @@ require File.expand_path('../arch_util_apdx_excel',__FILE__)
 require File.expand_path('../archi',__FILE__)
 require File.expand_path('../building_block',__FILE__)
 
+#web dialogs
+require File.expand_path('../web_dialog_wrapper', __FILE__)
+require File.expand_path('../wd_general_info',__FILE__)
+
+
+
 # 自动化行为
 # 自动规整层高： BH_FaceConstrain
 # 切出楼层算面积：BH_CalArea
@@ -65,11 +71,19 @@ module Sketchup::Excel
   cmd5.status_bar_text = "show Or Hide"
   cmd5.menu_text = "showOrHide"
 
+  cmd6 = UI::Command.new("WEB"){SUExcel.open_wd_general_info()}
+  cmd6.small_icon = "Images/web.png"
+  cmd6.large_icon = "Images/web.png"
+  cmd6.tooltip = "web"
+  cmd6.status_bar_text = "Web Dialog"
+  cmd6.menu_text = "web"
+
   toolbar1 = toolbar1.add_item cmd1
   toolbar1 = toolbar1.add_item cmd2
   toolbar1 = toolbar1.add_item cmd3
   toolbar1 = toolbar1.add_item cmd4
   toolbar1 = toolbar1.add_item cmd5
+  toolbar1 = toolbar1.add_item cmd6
   toolbar1.show
 end
 

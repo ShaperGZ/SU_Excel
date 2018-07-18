@@ -16,6 +16,7 @@ module ArchUtil
       g1=gps[i].copy
       g0=g0.union(g1)
     end
+    
     return g0
   end
 
