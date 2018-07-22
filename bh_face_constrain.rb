@@ -68,7 +68,10 @@ class BH_FaceConstrain < Arch::BlockUpdateBehaviour
     @gp.entities.each{|e| tops<<e if e.class==Sketchup::Face and e.normal.z.abs==1
     }
     #p "top.size=#{tops.size}"
-    tops.each {|e|
-      constrain_one_faceZ(e,false) }
+    for i in 0..tops.size-1
+      e=tops[i]
+      constrain_one_faceZ(e,false) if e.valid?
+    end
+
   end
 end

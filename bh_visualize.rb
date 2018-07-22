@@ -147,11 +147,13 @@ class BH_Visualize < Arch::BlockUpdateBehaviour
     mat = BH_Visualize.scheme_colors[program]
     mat = 'white' if mat == nil
 
-    @gp.entities.each{|e|
+    for i in 0..@gp.entities.size-1
+      e=@gp.entities[i]
       if e.class == Sketchup::Face
         e.material= mat
       end
-    }
+    end
+
     @mode = DisplayModes::SCHEME
   end
 

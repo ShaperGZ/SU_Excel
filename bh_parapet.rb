@@ -48,10 +48,14 @@ class BH_Parapet < Arch::BlockUpdateBehaviour
     remove_all()
     faces=[]
     @gp.entities.each{|e| faces<<e if e.class == Sketchup::Face and e.normal.z==1}
-    faces.each{|f|
-      fs=_make_parapet(f)
-      @parapets[f]=fs
-    }
+    for i in 0..faces.size-1
+      f=faces[i]
+      if f.valid?
+        fs=_make_parapet(f)
+        @parapets[f]=fs
+      end
+    end
+
     @host.enableUpdate = true
   end
 
