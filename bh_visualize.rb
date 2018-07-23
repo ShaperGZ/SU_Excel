@@ -34,7 +34,7 @@ class BH_Visualize < Arch::BlockUpdateBehaviour
     #p "reading color profile"
     profile = Hash.new    #颜色字典
     if profile_path ==nil
-      profile_path = SUExcel.profile_path
+      profile_path = SUExcel.get_file_path
     end
     aFile = File.open(profile_path,"r").read   #逐行读取文本
     aFile.gsub!(/\r\n?/, "\n")

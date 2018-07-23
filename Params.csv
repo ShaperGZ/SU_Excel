@@ -1,0 +1,10 @@
+description,variable,value,max,min,step
+building width,bd_width,50,60,30,1.5
+building depth,bd_depth,20,60,10,1.5
+building height,bd_height,30,200,3,1
+building flr to flr height,bd_ftfh,3,6,2.8,1
+unit width,un_width,3,12,3,1.5
+unit depth,un_depth,9,10,8,1
+facade width,fc_width,1.5,3,0.3,0.3
+apt,apt_cap_convex,1,2,0,0.1
+,apt_cap_concave,1,2,0,0.1

@@ -56,6 +56,7 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
 
   def invalidate_operation()
     entity=@gp
+
     if @regen_cuts
       removeCuts()
       #ftfh=entity.get_attribute("BuildingBlock","bd_ftfh")
