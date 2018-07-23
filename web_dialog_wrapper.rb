@@ -6,7 +6,6 @@ module SUExcel
       @@created_objects
     end
 
-
     def WebDialogWrapper.get(name)
       if @@created_objects.key?(name)
         return @@created_objects[name]
@@ -43,7 +42,7 @@ module SUExcel
     # 切换显隐叫toggle
     @visible=false
     def toggle()
-      @visible = !visible
+      @visible = !@visible
       #do somthing
     end
 
