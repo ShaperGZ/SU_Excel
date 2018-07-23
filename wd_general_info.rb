@@ -6,19 +6,16 @@ module SUExcel
     dialog.open
   end
 
-
 end
-
 
 class WD_GeneralInfo < SUExcel::WebDialogWrapper
 
   def self.create_or_get(name)
     dialog=SUExcel::WebDialogWrapper.get(WD_GeneralInfo.name)
     # TODO: 确认dialog如何检查正确性
-    if dialog == nil or dialog.valid?
+    if dialog == nil
       name=WD_GeneralInfo.name
       dialog=WD_GeneralInfo.new(name)
-      SUExcel::WebDialogWrapper.set(name,dialog)
     end
     return dialog
   end
@@ -35,9 +32,14 @@ class WD_GeneralInfo < SUExcel::WebDialogWrapper
     @dlg = UI::WebDialog.new("更改组信息", true, "ShowSketchupDotCom", 739, 641, 150, 150, true)
     file = File.join(__dir__,"/dialogs/test.html")
     @dlg.set_file(file)
-    @dlg.show
     @dlg.set_background_color("999999")
     @dlg.set_on_close{close()}
+    @dlg.show {
+      concept = SUExcel.read_scheme_types
+      concept.each{|c|
+        @dlg.execute_script("document.getElementById('id2').options.add(new Option('#{c}','#{c}'))")
+      }
+    }
     @dlg.add_action_callback("confirm") {|dialog, params|onConfirm(params)}
     @dlg.add_action_callback("default") {|dialog, params|onFillDefault()}
 
@@ -52,7 +54,7 @@ class WD_GeneralInfo < SUExcel::WebDialogWrapper
 
   # override WebDialog.onSelectionCleared(selection)
   def onSelectionCleared(selection)
-    close
+    #close
   end
 
   # override WebDialog.onSelectionBulkChange(selection)
@@ -68,7 +70,7 @@ class WD_GeneralInfo < SUExcel::WebDialogWrapper
       dict["id"+(i+1).to_s]=""
     }
     if entity.typename != "Group"
-      send_to_html(dict)
+      _send_to_html(dict)
       return
     end
     dict['id1'] = entity.get_attribute("BuildingBlock","pln_zone")

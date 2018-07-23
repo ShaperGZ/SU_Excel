@@ -50,7 +50,7 @@ module SUExcel
     # 切换显隐叫toggle
     @visible=false
     def toggle()
-      @visible = !visible
+      @visible = !@visible
       #do somthing
     end
 

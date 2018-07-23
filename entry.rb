@@ -12,7 +12,7 @@ require File.expand_path('../building_block',__FILE__)
 #web dialogs
 require File.expand_path('../web_dialog_wrapper', __FILE__)
 require File.expand_path('../wd_general_info',__FILE__)
-
+require File.expand_path('../wd_attribute_info',__FILE__)
 
 
 # 自动化行为
@@ -78,12 +78,17 @@ module Sketchup::Excel
   cmd6.status_bar_text = "Web Dialog"
   cmd6.menu_text = "web"
 
+  cmd7 = UI::Command.new("AttributeInfo"){SUExcel.open_attribute_info()}
+  cmd6.small_icon = "Images/web.png"
+  cmd6.large_icon = "Images/web.png"
+
   toolbar1 = toolbar1.add_item cmd1
   toolbar1 = toolbar1.add_item cmd2
   toolbar1 = toolbar1.add_item cmd3
   toolbar1 = toolbar1.add_item cmd4
   toolbar1 = toolbar1.add_item cmd5
   toolbar1 = toolbar1.add_item cmd6
+  toolbar1 = toolbar1.add_item cmd7
   toolbar1.show
 end
 

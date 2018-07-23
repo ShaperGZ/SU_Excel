@@ -55,29 +55,6 @@
         //function displayContent(msg) {
         //    GetID("txtContent").value += msg;
         //}
-
-        function creat() { 
-          
-            var selectObj = document.getElementById("concept");
-            //try {
-            //    reader = new FileReader();
-            //}
-            //catch (e) {
-            //    alert("当前浏览器不支持");
-            //    return;
-            //} 
-            //reader.readAsText(file,"C:\Users\wumy\AppData\Roaming\SketchUp\SketchUp 2014\SketchUp\Plugins\su_excel\colorPallet.txt");
-            //reader.onload = function (e) {
-            //    var fileText = e.target.result.split("\n");
-            //}
-            
-            //alert(fileText.value);
-
-            selectObj.options.add(new Option("retail", "retail"));
-            selectObj.options.add(new Option("office", "office"));
-        }
-
-
     </script>
     <style>
         h1 {
@@ -99,9 +76,9 @@
     <hr>
     <p style="font-family:arial;color:white;font-size:20px;">键入信息</p>
     <form action="" id="form">
+        <b>业态:</b><select id="id2"></select><br><br>
         <b>分区:</b><input type="text" id="id1"><br><br>
-        <b>业态：</b><input type="text" id="id2"><br><br>
-        <b>栋:</b><input type="text" id="id3"><br><br>
+        <b>栋号:</b><input type="text" id="id3"><br><br>
         <b>层高:</b><input type="text" id="id4"><br><br>
         <b>面积:</b><input type="text" id="id5" value="(只读)" readonly="readonly" disabled="disabled"><br><br>
     </form>
