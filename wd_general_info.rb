@@ -29,10 +29,10 @@ class WD_GeneralInfo < SUExcel::WebDialogWrapper
     return if @visible
     #@@excel_manager=SUExcel::ExcelManager.get_singleton()
 
-    @dlg = UI::WebDialog.new("更改组信息", true, "ShowSketchupDotCom", 739, 641, 150, 150, true)
+    @dlg = UI::WebDialog.new("更改组信息", true, "ShowSketchupDotCom", 400, 500, 150, 150, true)
     file = File.join(__dir__,"/dialogs/test.html")
     @dlg.set_file(file)
-    @dlg.set_background_color("999999")
+    @dlg.set_background_color("ffffff")
     @dlg.set_on_close{close()}
     @dlg.show {
       concept = SUExcel.read_scheme_types
