@@ -6,6 +6,7 @@ require 'pathname'
 require File.expand_path('../excel_manager', __FILE__)
 require File.expand_path('../arch_util',__FILE__)
 require File.expand_path('../arch_util_apdx_excel',__FILE__)
+require File.expand_path('../arch_util_apdx_face_constraints',__FILE__)
 require File.expand_path('../archi',__FILE__)
 require File.expand_path('../building_block',__FILE__)
 
@@ -27,6 +28,14 @@ require File.expand_path('../bh_excel_conduit',__FILE__)
 require File.expand_path('../bh_base_area',__FILE__)
 require File.expand_path('../bh_dimension',__FILE__)
 require File.expand_path('../bh_clear_naked_edge',__FILE__)
+
+
+# prototyping
+require File.expand_path('../prototype',__FILE__)
+require File.expand_path('../prototype_apt_block',__FILE__)
+require File.expand_path('../tool_create_prototype',__FILE__)
+require File.expand_path('../bh_apt_face_constraint',__FILE__)
+
 
 $enableOnEntityAdded=true
 $firstime=true
@@ -90,6 +99,18 @@ module Sketchup::Excel
   toolbar1 = toolbar1.add_item cmd6
   toolbar1 = toolbar1.add_item cmd7
   toolbar1.show
+
+
+
+  cmd_create_apt=UI::Command.new("CreateApt"){Prototyping.set_tool}
+  cmd_create_apt.tooltip = "crt_apt"
+  cmd_create_apt.status_bar_text = "crt_apt"
+  cmd_create_apt.menu_text = "crt_apt"
+
+  toolbar_prototype = UI::Toolbar.new "Prototype"
+  toolbar_prototype.add_item(cmd_create_apt)
+  toolbar_prototype.show
+
 end
 
 module SUExcel
@@ -268,11 +289,13 @@ module SUExcel
     tbd.each{|e| e.erase!}
   end
 
-  def self.profile_path()
+  def self.get_file_path(file="/colorPallet.txt")
     basepath = File.dirname(__FILE__)
-    profile_path = basepath + "/colorPallet.txt"
+    profile_path = basepath + file
     return profile_path
   end
+
+
 
 end
 

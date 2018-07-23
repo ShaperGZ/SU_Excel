@@ -58,6 +58,9 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
     #p "invalidateing #{entity}"
     removeCuts()
     ftfh=entity.get_attribute("BuildingBlock","bd_ftfh")
+    if ftfh.class == Array
+      ftfh=ftfh[0]
+    end
     floors = cutFloor(entity,ftfh)
     @cuts = intersectFloors(entity,floors)
     if @cuts == nil
