@@ -69,6 +69,8 @@ module Arch
   class BlockUpdateBehaviour
     attr_accessor :gp
     attr_accessor :host
+    attr_accessor :opened
+    attr_accessor :element_modified
     def initialize(gp,host=nil)
       @gp=gp
       @host=host
@@ -117,6 +119,9 @@ module Arch
       add_entObserver(EntObs.new(self))
       add_entObserver(InstObs.new(self))
       @@created_objects[gp]=self
+
+      @opened=false
+      @element_modified=false
     end
     def add_entObserver(observer)
       obs=@gp.add_observer(observer)
@@ -136,9 +141,12 @@ module Arch
     # override the following methods
     def onOpen(e)
       @updators.each{|u| u.onOpen(e)} if @enableUpdate and @gp.valid?
+      @opened=true
     end
     def onClose(e)
       @updators.each{|u| u.onClose(e)} if @enableUpdate and @gp.valid?
+      @opened=false
+      @element_modified = false
     end
 
     # invalidated 是一个长度为三的bool array, 指明那种变化已过期
@@ -169,6 +177,7 @@ module Arch
       @updators.each{|u| u.onElementAdded(entities, e)} if @enableUpdate and !e.deleted?
     end
     def onElementModified(entities, e)
+      @element_modified = true
       @updators.each{|u| u.onElementModified(entities, e)} if @enableUpdate and !e.deleted?
     end
   end

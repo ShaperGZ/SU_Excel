@@ -6,6 +6,7 @@ require 'pathname'
 require File.expand_path('../excel_manager', __FILE__)
 require File.expand_path('../arch_util',__FILE__)
 require File.expand_path('../arch_util_apdx_excel',__FILE__)
+require File.expand_path('../arch_util_apdx_compnt',__FILE__)
 require File.expand_path('../archi',__FILE__)
 require File.expand_path('../building_block',__FILE__)
 
@@ -27,6 +28,7 @@ require File.expand_path('../bh_excel_conduit',__FILE__)
 require File.expand_path('../bh_base_area',__FILE__)
 require File.expand_path('../bh_dimension',__FILE__)
 require File.expand_path('../bh_clear_naked_edge',__FILE__)
+require File.expand_path('../bh_components',__FILE__)
 
 $enableOnEntityAdded=true
 $firstime=true
@@ -271,6 +273,12 @@ module SUExcel
   def self.profile_path()
     basepath = File.dirname(__FILE__)
     profile_path = basepath + "/colorPallet.txt"
+    return profile_path
+  end
+
+  def self.get_path(file="/colorPallet.txt")
+    basepath = File.dirname(__FILE__)
+    profile_path = basepath + file
     return profile_path
   end
 

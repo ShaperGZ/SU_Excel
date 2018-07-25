@@ -60,6 +60,18 @@ module ArchUtil
     }
   end
 
+  def ArchUtil.get_edge_normal(edge, abs=false, normalize=true)
+    vs=edge.vertices
+    n=vs[1].position-vs[0].position
+    n.length=1 if normalize
+    if abs
+      n=Geom::Vector3d.new(n.x.abs,n.y.abs,n.z.abs)
+    else
+      n=Geom::Vector3d.new(n.x,n.y,n.z)
+    end
+    n
+  end
+
   def ArchUtil.genFlrPlns(ent,ftfh=3)
     modelEnts=Sketchup.active_model.entities
     cutter=modelEnts.add_group
@@ -94,6 +106,18 @@ module ArchUtil
     end
 
     return cutter
+  end
+
+  # intersect g1 with g2, and put the resulted lines in container
+  def ArchUtil.intersect(g1,g2,container)
+    g1.entities.intersect_with(
+        true,
+        g1.transformation,
+        container,
+        container.transformation,
+        true,
+        g2
+    )
   end
 
   def ArchUtil.getIntersectPlanes(ent,plns)
