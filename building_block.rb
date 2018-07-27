@@ -53,7 +53,8 @@ class BuildingBlock < Arch::Block
 
     # procedural generation
     @updators << BH_CalArea.new(gp,self)
-    @updators << BH_Parapet.new(gp,self)
+    # 先不要parapet, parapet 应该在合并所有形体后再判定边
+    #@updators << BH_Parapet.new(gp,self)
 
     # visualization
     @updators << BH_Visualize.new(gp,self)
@@ -61,6 +62,8 @@ class BuildingBlock < Arch::Block
     # calculation & data sync
     @updators << BH_Dimension.new(gp, self)
     @updators << BH_ExcelConduit.new(gp,self)
+
+    # 先不要BaseArea, 更新太慢了，不做动态，让人按按钮生成
     @updators << BH_BaseArea.new(gp,self)
 
 

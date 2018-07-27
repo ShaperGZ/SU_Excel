@@ -49,6 +49,7 @@ module Arch
       model.commit_operation
     end
     def onChangeEntity(entity)
+      return if not @host.gp.valid?
       invalidated=ArchUtil.invalidated_transformation?(@last_transformation, @host.gp.transformation)
       model= Sketchup.active_model
       model.start_operation('invalidate')

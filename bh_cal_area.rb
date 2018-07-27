@@ -16,6 +16,7 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
   attr_accessor :cuts
   def initialize(gp,host)
     super(gp,host)
+    @regen_cuts=true
   end
 
   #override the following methods
@@ -27,9 +28,12 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
     invalidate
 
   end
+
+
   def onChangeEntity(e, invalidated)
     p '-> BH_CalArea.onChangeEntity'
     super(e, invalidated)
+    @regen_cuts=invalidated[2]
     invalidate
     # TODO:move cuts to new position if no scale
     # if invalidated[2]
@@ -55,25 +59,29 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
 
   def invalidate_operation()
     entity=@gp
-    #p "invalidateing #{entity}"
-    removeCuts()
-    ftfh=entity.get_attribute("BuildingBlock","bd_ftfh")
-    floors = cutFloor(entity,ftfh)
-    @cuts = intersectFloors(entity,floors)
-    if @cuts == nil
-      return
+    if @regen_cuts
+      removeCuts()
+      ftfh=entity.get_attribute("BuildingBlock","bd_ftfh")
+      # floors = cutFloor(entity,ftfh)
+      # @cuts = intersectFloors(entity,floors)
+      @cuts= slice(entity,ftfh)
+      if @cuts == nil
+        return
+      end
+
+      #TODO: set floor to attibute, currently failed because holes
+      #flrs=get_floor_data_string(@cuts)
+      ##entity.set_attribute("BuildingBlock","geo_floors",flrs)
+
+      @cuts.locked = true
+      @cuts.name=$genName
+      get_std_flrs
+      ttArea=calAreas()
+      entity.set_attribute("BuildingBlock","bd_area",ttArea)
+    else
+      @cuts.transformation=@gp.transformation
     end
-
-    #TODO: set floor to attibute, currently failed because holes
-    #flrs=get_floor_data_string(@cuts)
-    ##entity.set_attribute("BuildingBlock","geo_floors",flrs)
-
-    @cuts.locked = true
-    @cuts.name=$genName
-    ttArea=calAreas()
-    entity.set_attribute("BuildingBlock","bd_area",ttArea)
   end
-
 
   def get_floor_data_string(cuts)
     flrs=[]
@@ -90,22 +98,23 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
     return flrs
   end
 
-  def cutFloor(subject ,ftfh, foffset=1)
-
+  # this dosn't work for holes， but very fast!
+  def slice(subject ,ftfh, foffset=1, match_material=true)
     modelEnts=Sketchup.active_model.entities
     cutter=modelEnts.add_group
-    cutEnts=cutter.entities
-    cutTrans=cutter.transformation
+    cutter.transformation=subject.transformation
+    cutter.transform! Geom::Transformation.translation([0,0,1.m])
+    zscale=subject.transformation.zscale
     #p subject.class
-    subjectBound=subject.bounds
-    subjectH = (subjectBound.max.z - subjectBound.min.z)
-    #p "(", subjectH
-    subjectH =  subjectH / $m2inch
-    #p subjectH, ")"
+    subjectBound=subject.local_bounds
+    subjectH = subjectBound.max.z
+    subjectHG=subject.bounds.max.z - subject.bounds.min.z
+    flrCount = (subjectHG / ftfh.m).round
 
-    flrCount = (subjectH / ftfh).floor
+    p "h=#{subjectHG.to_m} ftfh=#{ftfh} count=#{flrCount}"
 
-    #按逆时针顺序提取boundingbox底部的四个点
+    # 按逆时针顺序提取boundingbox底部的四个点
+    # 后面加的括号里的向量是为了拿大个plane
     basePts=[
         subjectBound.corner(0)+(subjectBound.corner(0)-subjectBound.corner(3)),
         subjectBound.corner(1)+(subjectBound.corner(1)-subjectBound.corner(2)),
@@ -113,19 +122,108 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
         subjectBound.corner(2)+(subjectBound.corner(2)-subjectBound.corner(1))
     ]
 
+    zoffset=ftfh.m/zscale
     for i in 0..flrCount
-      if basePts[0].z<subjectBound.max.z and (basePts[0].z+(1* $m2inch))<subjectBound.max.z
+      f=cutter.entities.add_face(basePts)
+      #sketchup 会把在0高度的面自动向下，所以要反过来
+      f.reverse! if f.normal.z<0
+      basePts.each{|p| p.z=p.z+zoffset}
+      # if basePts[0].z<subjectBound.max.z and (basePts[0].z+(1.m))<subjectBound.max.z
+      #   #moved outside of this if
+      # end
+    end
+
+    # intersect cutter and the group
+    tbr=[]
+    cutter.entities.each{|e| tbr<<e if e.class ==Sketchup::Edge}
+    cutter.entities.intersect_with(
+                       true,
+                       cutter.transformation,
+                       cutter,
+                       cutter.transformation,
+                       true,
+                       @gp
+    )
+    for i in 0..tbr.size-1
+      tbr[i].erase! if tbr[i].valid?
+    end
+    ArchUtil.remove_coplanar_edges(cutter.entities)
+    cutter.transform! Geom::Transformation.translation([0,0,-1.m])
+    cutter.material = @gp.material if match_material
+    return cutter
+  end
+
+  def get_std_flrs()
+    return if @cuts==nil
+    dict=Hash.new
+    indices=[]
+    @cuts.entities.each{|e|
+      if e.class == Sketchup::Face
+        index=e.vertices[0].position.z
+        dict[index]=e
+        indices<<index
+      end
+    }
+    indices.sort!
+    std_flrs=Hash.new
+    for i in 0..indices.size-1
+      face=dict[indices[i]]
+      key=face.area.round
+      if std_flrs.key?(key)
+        std_flrs[key][0]+=1
+      else
+        primiter=[]
+        face.vertices.each{|v|
+          primiter<<v.position.x
+          primiter<<v.position.y
+        }
+        content=[1,primiter]
+        std_flrs[key]=content
+      end
+    end
+    p std_flrs.size
+    @gp.set_attribute("BuildingBlock","geo_std_flr",std_flrs.to_a)
+    @gp.set_attribute("BuildingBlock","bd_std_flr",std_flrs.size)
+  end
+
+  # this was used when intersecting two solids
+  def cutFloor(subject ,ftfh, foffset=1)
+
+    modelEnts=Sketchup.active_model.entities
+    cutter=modelEnts.add_group
+    cutter.transformation=@gp.transformation
+
+    #p subject.class
+    subjectBound=subject.local_bounds
+    subjectH = subjectBound.max.z
+
+    flrCount = (subjectH / ftfh.m).floor
+
+    # 按逆时针顺序提取boundingbox底部的四个点
+    # 后面加的括号里的向量是为了拿大个plane
+    basePts=[
+        subjectBound.corner(0)+(subjectBound.corner(0)-subjectBound.corner(3)),
+        subjectBound.corner(1)+(subjectBound.corner(1)-subjectBound.corner(2)),
+        subjectBound.corner(3)+(subjectBound.corner(3)-subjectBound.corner(0)),
+        subjectBound.corner(2)+(subjectBound.corner(2)-subjectBound.corner(1))
+    ]
+
+
+    for i in 0..flrCount
+      if basePts[0].z<subjectBound.max.z and (basePts[0].z+(1.m))<subjectBound.max.z
         f=cutter.entities.add_face(basePts)
         #sketchup 会把在0高度的面自动向下，所以要反过来
-        f.reverse! if basePts[0].z==0
-        ext=f.pushpull(foffset* $m2inch)
-        basePts.each{|p| p.z=p.z+(ftfh * $m2inch)}
+
+        f.reverse! if f.normal.z<0
+        ext=f.pushpull(foffset.m)
+        basePts.each{|p| p.z=p.z+ftfh.m}
       end
     end
 
     return cutter
   end
 
+  # this was used when intersecting two solids
   def intersectFloors(subject,floors)
     return nil if subject.deleted?
     modelEnts=Sketchup.active_model.entities
@@ -173,9 +271,16 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
   end
 
   def calAreas()
+    scale_factor = @cuts.transformation.xscale * @cuts.transformation.yscale
     ttArea=0
-    @cuts.entities.each{|e| ttArea += e.area if e.class == Sketchup::Face and e.normal.z==-1 }
-    ttArea = ttArea / $m2inchsq
+
+    @cuts.entities.each{|e|
+      if e.class == Sketchup::Face
+        # 因为是平房，所以to_m 两次 -_-!...
+        ttArea += e.area.to_m.to_m
+      end
+    }
+    ttArea = ttArea * scale_factor
     return ttArea
   end
 

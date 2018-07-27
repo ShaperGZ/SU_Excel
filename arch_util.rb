@@ -43,28 +43,28 @@ module ArchUtil
   end
 
   def ArchUtil.remove_coplanar_edges(entities)
+    tbr=[]
     entities.each{|e|
-      if e.class == Sketchup::Edge
-        planar=true
-        ref=e.faces[0].normal
-        e.faces.each{|f|
-          if f.normal != ref
-            planar=false
-            break
-          end
-        }
-        if planar
-          e.erase!
+      if e.class == Sketchup::Edge and e.faces.size==2
+        if e.faces[0].normal == e.faces[1].normal
+          tbr<<e
         end
       end
     }
+
+    for i in 0..tbr.size-1
+      tbr[i].erase! if tbr[i].valid?
+    end
   end
+
+
 
   def ArchUtil.genFlrPlns(ent,ftfh=3)
     modelEnts=Sketchup.active_model.entities
     cutter=modelEnts.add_group
     cutEnts=cutter.entities
     cutTrans=cutter.transformation
+    cutter.transform! Geom::Transformation.translation([0,0,1.m])
 
     subject=ent
     return nil if subject == nil
@@ -92,7 +92,7 @@ module ArchUtil
         basePts.each{|p| p.z=p.z+(ftfh * $m2inch )}
       end
     end
-
+    cutter.transform! Geom::Transformation.translation([0,0,-1.m])
     return cutter
   end
 
