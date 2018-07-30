@@ -15,7 +15,7 @@ class BH_Components < Arch::BlockUpdateBehaviour
 
   def self.orient_definition(definition,bblock)
     width=1.5
-    
+
     ftfh=bblock.gp.get_attribute("BuildingBlock","bd_ftfh")
     qfs=BH_Components.get_quad_faces(bblock)
     trans=BH_Components.get_transforms_for_quad_face(qfs,width)
