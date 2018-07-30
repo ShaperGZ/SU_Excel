@@ -25,11 +25,8 @@ class BH_Dimension < Arch::BlockUpdateBehaviour
     return if @gp.valid? == false
     #p "set高度和楼层数"
     group = @gp
-    bd_height = (group.bounds.max.z-group.bounds.min.z)/ $m2inch
-    group.set_attribute("BuildingBlock","bd_height",sprintf("%.2f",bd_height))
+    bd_height = (group.local_bounds.max.z * @gp.transformation.zscale).to_m.round
+    group.set_attribute("BuildingBlock","bd_height",bd_height)
 
-    ftfh = group.get_attribute("BuildingBlock","bd_ftfh")
-    bd_floors = bd_height/ftfh
-    group.set_attribute("BuildingBlock","bd_floors",bd_floors.to_i)
   end
 end
