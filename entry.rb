@@ -258,8 +258,6 @@ module SUExcel
     BH_BaseArea.update_base_area
   end
 
-
-
   def self.clear_script_generated_objs()
     generated_names=[
         "SCRIPTGENERATEDOBJECTS",
