@@ -197,9 +197,17 @@ module SUExcel
     @@last_user_input = input
 
     p "selected count =#{selected_groups.size}"
+
+    ftfh_strs=input[3].split(',')
+    p ftfh_strs
+    ftfhs=[]
+    ftfh_strs.each{|s|
+      ftfhs<<s.to_f
+    }
+
     # two actions: 01 assign color, 02 assign name
     selected_groups.each{|group|
-      BuildingBlock.create_or_invalidate(group,input[0],input[1],input[2],input[3].to_f)
+      BuildingBlock.create_or_invalidate(group,input[0],input[1],input[2],ftfhs)
     }
   end
 
@@ -249,8 +257,6 @@ module SUExcel
     @@excel_manager.updateInstanceData()
     BH_BaseArea.update_base_area
   end
-
-
 
   def self.clear_script_generated_objs()
     generated_names=[

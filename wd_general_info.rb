@@ -76,7 +76,12 @@ class WD_GeneralInfo < SUExcel::WebDialogWrapper
     dict['id1'] = entity.get_attribute("BuildingBlock","pln_zone")
     dict['id2'] = entity.get_attribute("BuildingBlock","pln_program")
     dict['id3'] = entity.get_attribute("BuildingBlock","pln_tower")
-    dict['id4'] =  entity.get_attribute("BuildingBlock","bd_ftfh")
+    ftfh=entity.get_attribute("BuildingBlock","bd_ftfh")
+    ftfh_str=ftfh.to_s
+    if ftfh.class == Array
+      ftfh_str=ftfh_str[1..-2]
+    end
+    dict['id4'] =  ftfh_str
     area=entity.get_attribute("BuildingBlock","bd_area")
     area=sprintf("%.2f",area) if area !=nil
     dict['id5'] = area
@@ -112,7 +117,13 @@ class WD_GeneralInfo < SUExcel::WebDialogWrapper
 
     selections.each{|e|
       if e.typename == "Group"
-        BuildingBlock.create_or_invalidate(e,info[0],info[2],info[1],info[3].to_f)
+        ftfh_strs=info[3].split(',')
+        p ftfh_strs
+        ftfhs=[]
+        ftfh_strs.each{|s|
+          ftfhs<<s.to_f
+        }
+        BuildingBlock.create_or_invalidate(e,info[0],info[2],info[1],ftfhs)
       end
     }
     # 批量更新底面积和同步excel

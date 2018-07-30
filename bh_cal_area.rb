@@ -50,10 +50,7 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
   def invalidate()
     return if @host==nil
     @host.enableUpdate = false
-    #model= Sketchup.active_model
-    #model.start_operation('invalidate')
     invalidate_operation
-    #model.commit_operation
     @host.enableUpdate = true
   end
 
@@ -61,10 +58,11 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
     entity=@gp
     if @regen_cuts
       removeCuts()
-      ftfh=entity.get_attribute("BuildingBlock","bd_ftfh")
+      #ftfh=entity.get_attribute("BuildingBlock","bd_ftfh")
       # floors = cutFloor(entity,ftfh)
       # @cuts = intersectFloors(entity,floors)
-      @cuts= slice(entity,ftfh)
+
+      @cuts= slice(entity)
       if @cuts == nil
         return
       end
@@ -98,8 +96,9 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
     return flrs
   end
 
+
   # this dosn't work for holes， but very fast!
-  def slice(subject ,ftfh, foffset=1, match_material=true)
+  def slice(subject, foffset=1, match_material=true)
     modelEnts=Sketchup.active_model.entities
     cutter=modelEnts.add_group
     cutter.transformation=subject.transformation
@@ -107,11 +106,6 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
     zscale=subject.transformation.zscale
     #p subject.class
     subjectBound=subject.local_bounds
-    subjectH = subjectBound.max.z
-    subjectHG=subject.bounds.max.z - subject.bounds.min.z
-    flrCount = (subjectHG / ftfh.m).round
-
-    p "h=#{subjectHG.to_m} ftfh=#{ftfh} count=#{flrCount}"
 
     # 按逆时针顺序提取boundingbox底部的四个点
     # 后面加的括号里的向量是为了拿大个plane
@@ -122,8 +116,10 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
         subjectBound.corner(2)+(subjectBound.corner(2)-subjectBound.corner(1))
     ]
 
-    zoffset=ftfh.m/zscale
-    for i in 0..flrCount
+
+    ftfhs=@gp.get_attribute("BuildingBlock","bd_ftfhs")
+    for i in 0..ftfhs.size-1
+      zoffset=ftfhs[i].m / zscale
       f=cutter.entities.add_face(basePts)
       #sketchup 会把在0高度的面自动向下，所以要反过来
       f.reverse! if f.normal.z<0
@@ -181,7 +177,7 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
         std_flrs[key]=content
       end
     end
-    p std_flrs.size
+    p "BuildingBlock.get_std_flrs = #{std_flrs.size}"
     @gp.set_attribute("BuildingBlock","geo_std_flr",std_flrs.to_a)
     @gp.set_attribute("BuildingBlock","bd_std_flr",std_flrs.size)
   end

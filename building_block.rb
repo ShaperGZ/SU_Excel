@@ -15,6 +15,7 @@ class BuildingBlock < Arch::Block
     if @@created_objects.key?(g)
       block=@@created_objects[g]
       block.setAttr4(zone,tower,program,ftfh)
+
       block.invalidate
       return block
     else
@@ -64,7 +65,7 @@ class BuildingBlock < Arch::Block
     @updators << BH_ExcelConduit.new(gp,self)
 
     # 先不要BaseArea, 更新太慢了，不做动态，让人按按钮生成
-    @updators << BH_BaseArea.new(gp,self)
+    #@updators << BH_BaseArea.new(gp,self)
 
 
   end
@@ -83,6 +84,8 @@ class BuildingBlock < Arch::Block
     dict["pln_program"]=program
     dict["bd_ftfh"]=ftfh
     setAttrByDict(dict)
+    # the following methods computes the ftfh for every floor
+    set_ftfhs
   end
   def setAttrByDict(dict)
     dict.each{|kvp|
@@ -94,6 +97,52 @@ class BuildingBlock < Arch::Block
 
   def invalidate()
     @updators.each{|e| e.onClose(@gp)}
+  end
+
+  def set_ftfhs()
+    bd_ftfh=@gp.get_attribute("BuildingBlock","bd_ftfh")
+    if bd_ftfh.class == Float
+      bd_ftfh=[bd_ftfh]
+    end
+    ftfhs=[]
+
+    # total height
+    tth=@gp.local_bounds.max.z * @gp.transformation.zscale
+    tth=tth.to_m
+    #p "total h =#{tth}"
+    current_H=0
+    counter=0
+    while current_H < tth
+      if counter<bd_ftfh.size
+        ftfh=bd_ftfh[counter]
+      else
+        ftfh = bd_ftfh[-1]
+      end
+      current_H += ftfh
+      ftfhs<<ftfh
+      counter+=1
+    end
+    @gp.set_attribute("BuildingBlock","bd_floors",counter)
+    @gp.set_attribute("BuildingBlock","bd_ftfhs",ftfhs)
+    return ftfhs
+  end
+
+  # determins ftfh from local z value
+  def get_ftfh_from_z(zval)
+    ftfhs=@gp.get_attribute("BuildingBlock", "bd_ftfhs")
+    unscaled_z=zval * @gp.transformation.zscale
+    tt=0
+    abs_h=0
+    ftfh=ftfhs[0]
+    for i in 0..ftfhs.size-1
+      tt+=ftfhs[i].m
+      if tt > unscaled_z
+        ftfh=ftfhs[i]
+        break
+      end
+      abs_h=tt
+    end
+    return ftfh,abs_h
   end
 
 

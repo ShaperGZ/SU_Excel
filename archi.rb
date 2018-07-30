@@ -132,45 +132,43 @@ module Arch
     end
     def enableUpdate=(val)
       @enableUpdate=val
+      p "set @enaleUpdate to: #{@enableUpdate}"
     end
 
     # override the following methods
     def onOpen(e)
-      @updators.each{|u| u.onOpen(e)} if @enableUpdate and @gp.valid?
+      @updators.each{|u| u.onOpen(e)} if enableUpdate and @gp.valid?
     end
     def onClose(e)
-      @updators.each{|u| u.onClose(e)} if @enableUpdate and @gp.valid?
+      @updators.each{|u| u.onClose(e)} if enableUpdate and @gp.valid?
     end
 
     # invalidated 是一个长度为三的bool array, 指明那种变化已过期
     # invalidated: [pos,rot,scale]
     def onChangeEntity(e,invalidated)
       # 当删除物件的时候这个e会变成另一个地址，所以检查e组是否还存在要靠@gp.valid?
-      if @enableUpdate and @gp.valid?
+      if enableUpdate and @gp.valid?
         @updators.each{|u|
           #p "executed u.gp:#{u.gp} u.valid=#{u.gp.valid?}"
-          u.onChangeEntity(e,invalidated)
+          u.onChangeEntity(@gp,invalidated)
         }
-      else
-        #p "onChangeEntity group = #{e} , e.deleted=#{e.deleted?}, e.valid=#{e.valid?}"
       end
     end
 
     def onEraseEntity(e)
       # 删除时输入的e不等于@gp, 要用@gp来删除
-      # p "onErase : e=#{e} @gp=#{@gp}"
-      # 结果："onErase : e=#<Sketchup::Group:0x148d8548> @gp=#<Deleted Entity:0xee74bd0>"
-      @updators.each{|u| u.onEraseEntity(@gp)} if @enableUpdate
-      if @enableUpdate
+      if enableUpdate
+        @updators.each{|u| u.onEraseEntity(@gp)}
         @@created_objects.delete(@gp)
       end
     end
 
     def onElementAdded(entities, e)
-      @updators.each{|u| u.onElementAdded(entities, e)} if @enableUpdate and !e.deleted?
+      @updators.each{|u| u.onElementAdded(entities, e)} if enableUpdate and !e.deleted?
     end
     def onElementModified(entities, e)
-      @updators.each{|u| u.onElementModified(entities, e)} if @enableUpdate and !e.deleted?
+      #p "enable update=#{enableUpdate}"
+      @updators.each{|u| u.onElementModified(entities, e)} if enableUpdate and !e.deleted?
     end
   end
 end
