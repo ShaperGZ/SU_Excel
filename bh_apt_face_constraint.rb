@@ -46,15 +46,26 @@ class BH_Apt_FaceConstraint < Arch::BlockUpdateBehaviour
   end
 
 
-  def constraint_all_bk()
+  def constraint_all()
     @enableUpdate=false
     bd_depth=@gp.get_attribute("BuildingBlock","bd_depth")
     p "bd_depth=#{bd_depth}"
+    # apt_cap_convex=@gp.get_attribute("BuildingBlock","apt_cap_convex")[0]
+    # apt_cap_concave=@gp.get_attribute("BuildingBlock","apt_cap_concave")[0]
+    # cap_max=bd_depth+apt_cap_convex
+    # void_max=bd_depth-apt_cap_concave
+    # @caps=[nil,[cap_max,-cap_max],nil]
+    # @voids=[nil,[void_max,-void_max],nil]
 
-    @widths[2]=nil
+    ftfh=@gp.get_attribute("BuildingBlock","bd_ftfh")
+    if ftfh.class ==Array
+      ftfh=ftfh[0]
+    end
+    @widths[2]=ftfh
     ArchUtil.constraint_gp(@gp,@widths,@caps,@voids)
     @enableUpdate=true
   end
+
 
 
   def constraint_scale_y()
