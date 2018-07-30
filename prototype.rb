@@ -120,7 +120,7 @@ class Prototype
 
     }
 
-    apt=PrototypeAptBlock.create_or_invalidate(gp,zone="zone1",tower="t1",program="apartment",ftfh=@bd_ftfh.to_a)
+    apt=PrototypeAptBlock.create_or_invalidate(gp,zone="zone1",tower="t1",program="apartment",ftfh=@bd_ftfh.value)
 
 
 

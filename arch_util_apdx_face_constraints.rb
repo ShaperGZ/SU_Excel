@@ -52,8 +52,8 @@ module ArchUtil
     void=[nil,nil]
 
     for i in 0..1
-      cap[i] = icap[i]*$m2inch/scale_factor if icap[i]!=nil
-      void[i] = ivoid[i]*$m2inch/scale_factor if ivoid[i] !=nil
+      cap[i] = icap[i]*$m2inch/scale_factor if icap[i] != nil
+      void[i] = ivoid[i]*$m2inch/scale_factor if ivoid[i] != nil
     end
 
     w*= $m2inch/scale_factor
@@ -74,7 +74,7 @@ module ArchUtil
       if f.normal[dir]<0
         offset*=-1
       end
-      #p "pffset=#{(offset/$m2inch).round(2)}|#{offset} , pos=#{pos[dir].to_f/$m2inch}, w=#{w/$m2inch}"
+      p "pffset=#{(offset/$m2inch).round(2)}|#{offset} , pos=#{pos[dir].to_f/$m2inch}, w=#{w/$m2inch}"
     end
 
     #offset = ArchUtil.get_val_offset(pos[dir].abs,w)
