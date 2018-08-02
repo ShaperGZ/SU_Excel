@@ -20,6 +20,24 @@ module ArchUtil
     return g0
   end
 
+  def ArchUtil.scale_3d(gp,scale_array=[1,1,1])
+    x=scale_array[0]
+    y=scale_array[1]
+    z=scale_array[2]
+
+    a=[
+        x,0,0,0,
+        0,y,0,0,
+        0,0,z,0,
+        0,0,0,1
+      ]
+
+    t=Geom::Transformation.new()
+    t.set!(a)
+    gp.transformation *= t
+
+  end
+
   def ArchUtil.translate(ent,x,y,z)
     t=Geom::Transformation.translation([x*$m2inch, y*$m2inch, z*$m2inch])
     ent.transform! t

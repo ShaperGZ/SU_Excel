@@ -49,35 +49,22 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
 
   def invalidate()
     return if @host==nil
+
     @host.enableUpdate = false
+    model= Sketchup.active_model
+    model.start_operation('cut floors')
+
     invalidate_operation
+
+    model.commit_operation
     @host.enableUpdate = true
   end
 
   def invalidate_operation()
-    entity=@gp
-<<<<<<< HEAD
-=======
-    #p "invalidateing #{entity}"
-    removeCuts()
-    ftfh=entity.get_attribute("BuildingBlock","bd_ftfh")
-    if ftfh.class == Array
-      ftfh=ftfh[0]
-    end
-    floors = cutFloor(entity,ftfh)
-    @cuts = intersectFloors(entity,floors)
-    if @cuts == nil
-      return
-    end
->>>>>>> prototype
 
     if @regen_cuts
       removeCuts()
-      #ftfh=entity.get_attribute("BuildingBlock","bd_ftfh")
-      # floors = cutFloor(entity,ftfh)
-      # @cuts = intersectFloors(entity,floors)
-
-      @cuts= slice(entity)
+      @cuts= slice(@gp)
       if @cuts == nil
         return
       end
@@ -90,7 +77,7 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
       @cuts.name=$genName
       get_std_flrs
       ttArea=calAreas()
-      entity.set_attribute("BuildingBlock","bd_area",ttArea)
+      @gp.set_attribute("BuildingBlock","bd_area",ttArea)
     else
       @cuts.transformation=@gp.transformation
     end
@@ -119,7 +106,6 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
     cutter.transformation=subject.transformation
     cutter.transform! Geom::Transformation.translation([0,0,1.m])
     zscale=subject.transformation.zscale
-    #p subject.class
     subjectBound=subject.local_bounds
 
     # 按逆时针顺序提取boundingbox底部的四个点
@@ -139,13 +125,12 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
       #sketchup 会把在0高度的面自动向下，所以要反过来
       f.reverse! if f.normal.z<0
       basePts.each{|p| p.z=p.z+zoffset}
-      # if basePts[0].z<subjectBound.max.z and (basePts[0].z+(1.m))<subjectBound.max.z
-      #   #moved outside of this if
-      # end
+
     end
 
     # intersect cutter and the group
     tbr=[]
+
     cutter.entities.each{|e| tbr<<e if e.class ==Sketchup::Edge}
     cutter.entities.intersect_with(
                        true,
@@ -155,12 +140,16 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
                        true,
                        @gp
     )
+    #cutter.copy
+    # remove outter edges
     for i in 0..tbr.size-1
       tbr[i].erase! if tbr[i].valid?
     end
+
     ArchUtil.remove_coplanar_edges(cutter.entities)
     cutter.transform! Geom::Transformation.translation([0,0,-1.m])
     cutter.material = @gp.material if match_material
+
     return cutter
   end
 

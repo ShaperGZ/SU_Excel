@@ -48,16 +48,16 @@ class Prototype
 
   def initialize()
     # basic attributes
-    read_csv_params
+    read_csv_params()
 
     #tool related attributes
     @point_1=nil
     @point_2=nil
     @point_3=nil
     @point_4=nil
-    @xvect=Geom::Vector3d.new(@bd_width.value * $m2inch,0,0)
-    @yvect=Geom::Vector3d.new(0,@bd_depth.value* $m2inch,0)
-    @zvect=Geom::Vector3d.new(0,0,@bd_height.value* $m2inch)
+    @xvect=Geom::Vector3d.new(@bd_width.value.m,0,0)
+    @yvect=Geom::Vector3d.new(0,@bd_depth.value.m,0)
+    @zvect=Geom::Vector3d.new(0,0,@bd_height.value.m)
   end
 
   def read_csv_params()
@@ -71,12 +71,6 @@ class Prototype
     end
   end
 
-  def var(name)
-    if @vars.key?(name)
-      return @vars[name].value
-    end
-    return nil
-  end
 
   def confirm_creation
     gp=Sketchup.active_model.entities.add_group
@@ -115,7 +109,9 @@ class Prototype
       if value.class == Variable
         p "name=#{name} val=#{value}"
         #apt.instance_variable_set(name,value)
-        gp.set_attribute("BuildingBlock",name[1..-1],[value.value, value.max,value.min,value.step])
+        gp.set_attribute("BuildingBlock","p_"+name[1..-1],[value.value, value.max,value.min,value.step])
+        gp.set_attribute("BuildingBlock",name[1..-1],value.value)
+
       end
 
     }

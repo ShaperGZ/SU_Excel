@@ -1,9 +1,8 @@
 module SUExcel
-  def self.open_attribute_info
+  def self.open_attribute_info()
     dialog=WD_AttributeInfo.create_or_get(WD_AttributeInfo.name)
     dialog.open
   end
-
 end
 
 class WD_AttributeInfo < SUExcel::WebDialogWrapper

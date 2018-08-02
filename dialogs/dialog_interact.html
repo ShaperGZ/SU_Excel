@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//ZH-CN">
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        .text{
+         font-size: 10pt
+        }
+    </style>
+    <script>
+        function setValue(key,value){
+            dom=document.getElementById(key)
+            if (dom){
+                dom.value=value;
+            }
+
+        }
+    </script>
+
+</head>
+<body>
+    <table>
+        <tbody>
+            <tr>
+                <td><span class ="text'">bd_width</span></td>
+                <td><input id="bd_width" type="text" class="text"></td>
+            </tr>
+            <tr>
+                <td><span class ="text'">bd_depth</span></td>
+                <td><input id="bd_depth" type="text" class="text"></td>
+            </tr>
+            <tr>
+                <td><span class ="text'">bd_height</span></td>
+                <td><input id="bd_height" type="text" class="text"></td>
+            </tr>
+
+            <tr>
+                <td><button id="b_confirm"  onclick="onConfirm()">confirm</button></td>
+            </tr>
+        </tbody>
+    </table>
+    <input id="debug" type="text" style="width:300pt"></td>
+
+</body>
+<script type="text/javascript">
+    function log(str){
+        document.getElementById("debug").value=str
+    }
+
+    function add_listener(iname){
+        var name=iname
+        var ele=document.getElementById(name)
+        ele.addEventListener("keyup",
+            function (event) {
+                event.preventDefault();
+                if (event.keyCode === 13) {
+                    var value=ele.value
+                    var params=name+'|'+value
+                    window.location = "skp:updateAttr@"+params;
+                };
+            })
+    }
+
+    var items=["bd_width","bd_depth","bd_height"]
+    for(i =0; i<items.length;i++){
+
+        var name=items[i];
+        add_listener(name);
+    }
+
+
+
+</script>
+</html>

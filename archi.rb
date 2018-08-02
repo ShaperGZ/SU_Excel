@@ -4,16 +4,16 @@ module Arch
       @host=host
     end
     def onElementAdded(entities, entity)
-      model= Sketchup.active_model
-      model.start_operation('onElementAdded')
+      # model= Sketchup.active_model
+      # model.start_operation('onElementAdded')
       @host.onElementAdded(entities,entity) if @host.enableUpdate
-      model.commit_operation
+      # model.commit_operation
     end
     def onElementModified(entities, entity)
-      model= Sketchup.active_model
-      model.start_operation('onElementModified')
+      # model= Sketchup.active_model
+      # model.start_operation('onElementModified')
       @host.onElementModified(entities, entity) if @host.enableUpdate
-      model.commit_operation
+      #model.commit_operation
     end
   end
 
@@ -22,16 +22,16 @@ module Arch
       @host=host
     end
     def onOpen(instance)
-      model= Sketchup.active_model
-      model.start_operation('onOpen')
+      # model= Sketchup.active_model
+      # model.start_operation('onOpen')
       @host.onOpen(instance) if @host.enableUpdate
-      model.commit_operation
+      # model.commit_operation
     end
     def onClose(instance)
-      model= Sketchup.active_model
-      model.start_operation('onClose')
+      # model= Sketchup.active_model
+      # model.start_operation('onClose')
       @host.onClose(instance) if @host.enableUpdate
-      model.commit_operation
+      # model.commit_operation
 
     end
   end
@@ -43,16 +43,16 @@ module Arch
       @last_transformation=@host.gp.transformation.clone
     end
     def onEraseEntity(entity)
-      model= Sketchup.active_model
-      model.start_operation('onErase')
+      # model= Sketchup.active_model
+      # model.start_operation('onErase')
       @host.onEraseEntity(entity) if @host.enableUpdate
-      model.commit_operation
+      # model.commit_operation
     end
     def onChangeEntity(entity)
       return if not @host.gp.valid?
       invalidated=ArchUtil.invalidated_transformation?(@last_transformation, @host.gp.transformation)
-      model= Sketchup.active_model
-      model.start_operation('invalidate')
+      # model= Sketchup.active_model
+      # model.start_operation('invalidate')
       sign="---"
       for i in 0..2
         sign[i]= '+' if invalidated[i]
@@ -60,9 +60,7 @@ module Arch
       p "#{sign} [ EntObs.onChangeEntity e:#{entity} ] host.gp:#{@host.gp}"
       @host.onChangeEntity(entity,invalidated) if @host.enableUpdate
       @last_transformation = @host.gp.transformation.clone
-      model.commit_operation
-
-
+      # model.commit_operation
 
     end
   end

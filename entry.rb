@@ -28,6 +28,7 @@ require File.expand_path('../bh_excel_conduit',__FILE__)
 require File.expand_path('../bh_base_area',__FILE__)
 require File.expand_path('../bh_dimension',__FILE__)
 require File.expand_path('../bh_clear_naked_edge',__FILE__)
+require File.expand_path('../bh_interact',__FILE__)
 
 
 # prototyping
@@ -36,6 +37,10 @@ require File.expand_path('../prototype_apt_block',__FILE__)
 require File.expand_path('../tool_create_prototype',__FILE__)
 require File.expand_path('../bh_apt_face_constraint',__FILE__)
 
+
+#interaction
+require File.expand_path('../op_dimension.rb',__FILE__)
+require File.expand_path('../wd_interact.rb',__FILE__)
 
 $enableOnEntityAdded=true
 $firstime=true
@@ -107,8 +112,14 @@ module Sketchup::Excel
   cmd_create_apt.status_bar_text = "crt_apt"
   cmd_create_apt.menu_text = "crt_apt"
 
+  cmd_interact_dlg=UI::Command.new("showInteractDlg"){SUExcel.open_interaction}
+  cmd_interact_dlg.tooltip = "open interaction dlg"
+  cmd_interact_dlg.status_bar_text = "open interaction dlg"
+  cmd_interact_dlg.menu_text = "interaction dlg"
+
   toolbar_prototype = UI::Toolbar.new "Prototype"
   toolbar_prototype.add_item(cmd_create_apt)
+  toolbar_prototype.add_item(cmd_interact_dlg)
   toolbar_prototype.show
 
 end
