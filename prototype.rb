@@ -18,10 +18,24 @@ class Variable
     @step=step
   end
 
-  def set(value)
-    @value=value
-    @min=@value if @value<@min
-    @max=@value if @value>@max
+  def set(value, capped=true)
+    if capped
+      @value=cap(value)
+    else
+      @value=value
+      @min=@value if @value<@min
+      @max=@value if @value>@max
+    end
+  end
+
+  def cap(val)
+    if val<@min
+      val= @min
+    elsif val > @max
+      val=@max
+    end
+
+    return val
   end
 
   def to_a()
@@ -133,21 +147,53 @@ class Prototype
       @point_1=pt
     elsif @point_2 == nil
       @point_2 = pt
-      @xvect=@point_2-@point_1
-      @bd_width.value = @xvect.length / $m2inch
-      @yvect=Geom::Vector3d.new(0,0,1).cross(@xvect.normalize)
-      @yvect.length =@bd_depth.value * $m2inch
     elsif @point_3 == nil
       @point_3 = pt
-      @yvect.length=(@point_3-@point_1).length
-      @bd_depth.value = @yvect.length / $m2inch
     elsif @point_4 == nil
       @point_4 = pt
-      @zvect.length=(@point_4-@point_1).length
-      @bd_height = @zvect.length / $m2inch
-      return false
     end
+
+    set_vects()
     true
+  end
+
+  def set_vects()
+    @zvect=Geom::Vector3d.new(0,0,1)
+    if @point_1 == nil or @point_2 == nil
+      @xvect=Geom::Vector3d.new(1,0,0)
+      @yvect=Geom::Vector3d.new(0,0,1).cross(@xvect.normalize)
+    elsif @point_4 == nil
+      @xvect=@point_2-@point_1
+      @yvect=Geom::Vector3d.new(0,0,1).cross(@xvect.normalize)
+    else
+      @zvect.length=(@point_4-@point_1).length
+    end
+
+    #set x length
+    if @xvect.length ==1
+      @xvect.length=@bd_width.value.m
+    else
+      @bd_width.set(@xvect.length.to_m, true)
+      @xvect.length=@bd_width.value.m
+    end
+
+    #set y length
+    if @yvect.length ==1
+      @yvect.length=@bd_depth.value.m
+    else
+      @bd_depth.set(@yvect.length.to_m, true)
+      @yvect.length =@bd_depth.value.m
+    end
+
+    #set z length
+    if @zvect.length ==1
+      @zvect.length=@bd_height.value.m
+    else
+      @bd_height.set(@zvect.length.to_m, true)
+      @zvect.length =@bd_height.value.m
+    end
+
+
   end
 
   def picked_points()
@@ -164,28 +210,7 @@ class Prototype
     else
       pts_base<<@point_1
     end
-
-    if @point_1 !=nil and @point_2 == nil
-      mouse_pos.z=@point_1.z
-      @xvect=mouse_pos-@point_1
-      @yvect=Geom::Vector3d.new(0,0,1).cross(@xvect.normalize)
-      @yvect.length=@bd_depth.value * $m2inch
-    end
-
-    if @point_2 !=nil and @point_3 == nil
-      mouse_pos.z=@point_2.z
-      v=mouse_pos-@point_1
-      @yvect=Geom::Vector3d.new(0,0,1).cross(@xvect.normalize)
-      @yvect.length=v.length
-    end
-
-    if @point_3 !=nil and @point_4 == nil
-
-      v=mouse_pos-@point_1
-      @zvect=Geom::Vector3d.new(0,0,1)
-      @zvect.length=v.length
-    end
-
+    set_vects()
 
     pts_base<<pts_base[0] + @xvect
     pts_base<<pts_base[1] + @yvect

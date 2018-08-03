@@ -95,6 +95,10 @@ class BuildingBlock < Arch::Block
     }
   end
 
+  def attr(key)
+    return @gp.get_attribute("BuildingBlock",key)
+  end
+
   def invalidate()
     @updators.each{|e| e.onClose(@gp)}
   end

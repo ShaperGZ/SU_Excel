@@ -64,6 +64,7 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
 
     if @regen_cuts
       removeCuts()
+      @host.set_ftfhs()
       @cuts= slice(@gp)
       if @cuts == nil
         return
@@ -255,15 +256,6 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
       del[i].erase! if del[i] !=nil and del[i].valid?
     end
 
-    # faces=[]
-    # cuts.entities.each{|e|
-    #   if e.class==Sketchup::Face and e.normal.z == -1
-    #     faces<<e
-    #   end
-    # }
-    # flrs=Sketchup.active_model.entities.add_group(faces)
-    # flrs.transformation=cuts.transformation
-    #cuts.erase!
 
     flrs=cuts
 
@@ -276,7 +268,7 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
 
     @cuts.entities.each{|e|
       if e.class == Sketchup::Face
-        # 因为是平房，所以to_m 两次 -_-!...
+        # 因为是平方，所以to_m 两次 -_-!...
         ttArea += e.area.to_m.to_m
       end
     }

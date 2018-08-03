@@ -20,6 +20,38 @@ module ArchUtil
     return g0
   end
 
+  def ArchUtil.local_cut_face(gp,axis=2,gen_face=true)
+    subject=gp
+    subjectBound=subject.local_bounds
+
+    # 按逆时针顺序提取boundingbox底部的四个点
+    # 后面加的括号里的向量是为了拿大个plane
+    basePts=[]
+    case axis
+    when 0
+      indices=[4,5,1,0]
+      shift=[1,0,4,5]
+    when 1
+      indices=[0,2,6,4]
+      shift=[6,4,0,2]
+    else
+      indices=[0,1,3,2]
+      shift=[3,2,0,1]
+    end
+    for i in 0..3
+      idx=indices[i]
+      sht=shift[i]
+      basePts<<subjectBound.corner(idx)+(subjectBound.corner(idx)-subjectBound.corner(sht))
+    end
+    if gen_face
+      g=Sketchup.active_model.entities.add_group
+      g.entities.add_face(basePts)
+      g.transformation=subject.transformation
+      return g
+    end
+    return basePts
+  end
+
   def ArchUtil.scale_3d(gp,scale_array=[1,1,1])
     x=scale_array[0]
     y=scale_array[1]
@@ -38,10 +70,6 @@ module ArchUtil
 
   end
 
-  def ArchUtil.translate(ent,x,y,z)
-    t=Geom::Transformation.translation([x*$m2inch, y*$m2inch, z*$m2inch])
-    ent.transform! t
-  end
 
   def ArchUtil.translate(ent,pos)
     t=Geom::Transformation.translation([pos.x, pos.y, pos.z])

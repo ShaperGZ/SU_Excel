@@ -8,11 +8,13 @@ class Op_Dimension
 
     ArchUtil.scale_3d(gp,scale)
 
-    gp.set_attribute("BuildingBlock", "bd_width", size[0].m)
-    gp.set_attribute("BuildingBlock", "bd_depth", size[1].m)
-    gp.set_attribute("BuildingBlock", "bd_height", size[2].m)
+    gp.set_attribute("BuildingBlock", "bd_width", size[0])
+    gp.set_attribute("BuildingBlock", "bd_depth", size[1])
+    gp.set_attribute("BuildingBlock", "bd_height", size[2])
 
   end
+
+
 
   def self.get_size(gp)
     group=gp

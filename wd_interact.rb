@@ -35,6 +35,8 @@ class  WD_Interact < SUExcel::WebDialogWrapper
     @dlg.set_on_close{close()}
     @dlg.show
     @dlg.add_action_callback("updateAttr"){|dialog,params|update_attr(params)}
+    @dlg.add_action_callback("normal_mode"){|dialog,params|normal_mode()}
+    @dlg.add_action_callback("unit_mode"){|dialog,params|unit_mode()}
     @visible=true
     onSelectionBulkChange(Sketchup.active_model.selection)
   end
@@ -59,16 +61,21 @@ class  WD_Interact < SUExcel::WebDialogWrapper
     @subjectGP=entity
     @subjectBB=BuildingBlock::created_objects[entity]
     @subjectIT=@subjectBB.get_updator_by_type(BH_Interact)
-    @subjectIT.update_dialog_data(@dlg)
+    @subjectIT.set_dlg(@dlg)
+    @subjectIT.update_dialog_data()
   end
 
-  # def update_attr(params)
-  #   trunks=params.split('|')
-  #   name=trunks[0]
-  #   value=trunks[1]
-  #
-  #   p("update_attr name=#{name} value=#{value}")
-  # end
+  def normal_mode()
+    return if @subjectGP==nil or @subjectBB ==nil
+    display_mode=@subjectBB.get_updator_by_type(BH_Apt_DisplayMode)
+    display_mode.show(false)
+  end
+
+  def unit_mode()
+    return if @subjectGP==nil or @subjectBB ==nil
+    display_mode=@subjectBB.get_updator_by_type(BH_Apt_DisplayMode)
+    display_mode.show()
+  end
 
   def update_attr(params)
     trunks=params.split('|')
@@ -96,5 +103,7 @@ class  WD_Interact < SUExcel::WebDialogWrapper
       return result
     end
   end
+
+
 
 end

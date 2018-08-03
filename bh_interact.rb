@@ -11,6 +11,16 @@ class BH_Interact < Arch::BlockUpdateBehaviour
     return false
   end
 
+  def initialize(gp,host)
+    #p 'f=initialized constrain face'
+    super(gp,host)
+    @dlg=nil
+  end
+
+  def set_dlg(dlg)
+    @dlg=dlg
+  end
+
   def set_gp_attr(key,value)
     @gp.set_attribute("BuildingBlock",key,value)
 
@@ -22,15 +32,20 @@ class BH_Interact < Arch::BlockUpdateBehaviour
     BH_Interact.set_bd_size(@gp,size)
   end
 
-  def update_dialog_data(dlg)
+  def onChangeEntity(e, invalidated)
+    return if not invalidated[2]
+    update_dialog_data()
+  end
+
+  def update_dialog_data()
+    return if @dlg==nil
     dict = @gp.attribute_dictionary("BuildingBlock")
     return if dict.class != Sketchup::AttributeDictionary
     dict.keys.each{|key|
       skey=key.to_s
       sval=dict[key].to_s
-      message="setValue(#{skey},#{sval})"
-      p "sending message: #{message}"
-      dlg.execute_script(message)
+      message="setValue('#{skey}','#{sval}')"
+      @dlg.execute_script(message)
     }
   end
 end

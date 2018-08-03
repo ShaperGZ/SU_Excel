@@ -29,6 +29,7 @@ require File.expand_path('../bh_base_area',__FILE__)
 require File.expand_path('../bh_dimension',__FILE__)
 require File.expand_path('../bh_clear_naked_edge',__FILE__)
 require File.expand_path('../bh_interact',__FILE__)
+require File.expand_path('../bh_apt_circulation',__FILE__)
 
 
 # prototyping
@@ -36,6 +37,7 @@ require File.expand_path('../prototype',__FILE__)
 require File.expand_path('../prototype_apt_block',__FILE__)
 require File.expand_path('../tool_create_prototype',__FILE__)
 require File.expand_path('../bh_apt_face_constraint',__FILE__)
+require File.expand_path('../bh_apt_display_mode',__FILE__)
 
 
 #interaction
@@ -103,7 +105,7 @@ module Sketchup::Excel
   toolbar1 = toolbar1.add_item cmd5
   toolbar1 = toolbar1.add_item cmd6
   toolbar1 = toolbar1.add_item cmd7
-  toolbar1.show
+
 
 
 
@@ -117,10 +119,14 @@ module Sketchup::Excel
   cmd_interact_dlg.status_bar_text = "open interaction dlg"
   cmd_interact_dlg.menu_text = "interaction dlg"
 
-  toolbar_prototype = UI::Toolbar.new "Prototype"
-  toolbar_prototype.add_item(cmd_create_apt)
-  toolbar_prototype.add_item(cmd_interact_dlg)
-  toolbar_prototype.show
+  toolbar1 = toolbar1.add_item cmd_create_apt
+  toolbar1 = toolbar1.add_item cmd_interact_dlg
+  toolbar1.show
+
+  # toolbar_prototype = UI::Toolbar.new "Prototype"
+  # toolbar_prototype.add_item(cmd_create_apt)
+  # toolbar_prototype.add_item(cmd_interact_dlg)
+  # toolbar_prototype.show
 
 end
 

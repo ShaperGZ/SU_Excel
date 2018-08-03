@@ -27,8 +27,11 @@ class PrototypeAptBlock < BuildingBlock
     #@updators << BH_Apt_FaceConstraint.new(gp,self)
     @updators << BH_Dimension.new(gp,self)
     @updators << BH_CalArea.new(gp,self)
+    @updators << BH_Apt_Circulation.new(gp,self)
+    @updators << BH_Apt_DisplayMode.new(gp,self)
+
+    #send info
     @updators << BH_Interact.new(gp,self)
-    #@updators << BH_Parapet.new(gp,self)
   end
 
   def updators

@@ -8,10 +8,20 @@
         }
     </style>
     <script>
+        function testSetVal(){
+            setValue('bd_width','entered2')
+        }
+        function normal_mode(){
+            window.location = "skp:normal_mode@";
+        }
+        function unit_mode(){
+            window.location = "skp:unit_mode@";
+        }
+
         function setValue(key,value){
-            dom=document.getElementById(key)
-            if (dom){
-                dom.value=value;
+            ele=document.getElementById(key)
+            if (ele){
+                ele.value=value;
             }
 
         }
@@ -19,6 +29,17 @@
 
 </head>
 <body>
+    <table>
+        <tbody>
+        <tr>
+            <td>
+                <button id="b_normal"  onclick="normal_mode()" style="width:50pt">Normal</button>
+                <button id="b_units"  onclick="unit_mode()" style="width:50pt">Units</button>
+                <button id="b_core"  onclick="testSetVal()" style="width:50pt">Core</button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
     <table>
         <tbody>
             <tr>
@@ -34,11 +55,10 @@
                 <td><input id="bd_height" type="text" class="text"></td>
             </tr>
 
-            <tr>
-                <td><button id="b_confirm"  onclick="onConfirm()">confirm</button></td>
-            </tr>
+
         </tbody>
     </table>
+
     <input id="debug" type="text" style="width:300pt"></td>
 
 </body>
