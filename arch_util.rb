@@ -20,6 +20,18 @@ module ArchUtil
     return g0
   end
 
+  def ArchUtil.intersect(g1,g2,container)
+    result=g1.entities.intersect_with(
+        true,
+        g1.transformation,
+        container,
+        container.transformation,
+        true,
+        g2
+    )
+    return result
+  end
+
   def ArchUtil.local_cut_face(gp,axis=2,gen_face=true)
     subject=gp
     subjectBound=subject.local_bounds
@@ -50,6 +62,34 @@ module ArchUtil
       return g
     end
     return basePts
+  end
+
+  def ArchUtil.local_cut_face_array(gp, distances, axis=2, gen_face=true)
+    pts=ArchUtil.local_cut_face(gp,axis,false)
+    pts_array=[]
+    vect=Geom::Vector3d.new(0,0,0)
+    vect[axis]=1
+
+    distances.each{|d|
+      ipts=pts.clone
+      add_vect=vect.clone
+      add_vect.length=d
+      for i in 0..ipts.size-1
+        ipts[i] += add_vect
+      end
+      pts_array<<ipts
+    }
+
+    if gen_face
+      g=Sketchup.active_model.entities.add_group
+      pts_array.each{|pts|
+        g.entities.add_face(pts)
+      }
+      g.transformation=gp.transformation
+      return g
+    end
+
+    return pts_array
   end
 
   def ArchUtil.scale_3d(gp,scale_array=[1,1,1])
