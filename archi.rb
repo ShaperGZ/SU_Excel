@@ -91,6 +91,10 @@ module Arch
 
     def onElementModified(entities, e)
     end
+
+    def invalidate()
+
+    end
   end
 
   class Block < BlockUpdateBehaviour

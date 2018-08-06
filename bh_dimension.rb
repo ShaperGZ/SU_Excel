@@ -26,25 +26,12 @@ class BH_Dimension < Arch::BlockUpdateBehaviour
     #p "set高度和楼层数"
     group = @gp
 
-    bd_width,bd_depth,bd_height=BH_Dimension.get_size(@gp)
+    bd_width,bd_depth,bd_height=Op_Dimension.get_size(@gp)
 
     group.set_attribute("BuildingBlock","bd_height",bd_height)
     group.set_attribute("BuildingBlock","bd_width",bd_width)
     group.set_attribute("BuildingBlock","bd_depth",bd_depth)
   end
 
-  def self.get_size(gp)
-    group=gp
-    height = (group.local_bounds.max.z * gp.transformation.zscale).to_m.round(3)
 
-    width_max = (group.local_bounds.max.x * gp.transformation.xscale).to_m.round(3)
-    width_min = (group.local_bounds.min.x * gp.transformation.xscale).to_m.round(3)
-    width = width_max-width_min
-
-    depth_max = (group.local_bounds.max.y * gp.transformation.yscale).to_m.round(3)
-    depth_min = (group.local_bounds.min.y * gp.transformation.yscale).to_m.round(3)
-    depth = depth_max - depth_min
-
-    return width,depth,height
-  end
 end

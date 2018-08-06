@@ -100,7 +100,8 @@ class BuildingBlock < Arch::Block
   end
 
   def invalidate()
-    @updators.each{|e| e.onClose(@gp)}
+    # @updators.each{|e| e.onClose(@gp)}
+    @updators.each{|e| e.invalidate}
   end
 
   def set_ftfhs()

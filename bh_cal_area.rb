@@ -79,6 +79,7 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
       get_std_flrs
       ttArea=calAreas()
       @gp.set_attribute("BuildingBlock","bd_area",ttArea)
+      #@cuts.hidden=true
     else
       @cuts.transformation=@gp.transformation
     end
@@ -102,6 +103,8 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
 
   # this dosn't work for holes， but very fast!
   def slice(subject, foffset=1, match_material=true)
+    ArchUtil.remove_coplanar_edges(@gp.entities)
+
     modelEnts=Sketchup.active_model.entities
     cutter=modelEnts.add_group
     cutter.transformation=subject.transformation
@@ -129,18 +132,38 @@ class BH_CalArea < Arch::BlockUpdateBehaviour
 
     end
 
+    # identify the ents to be intersect
+    dup=Sketchup.active_model.entities.add_group
+    @gp.entities.each{|e|
+      dup.entities.add_face(e.vertices) if e.class == Sketchup::Face
+    }
+    dup.transformation=@gp.transformation
     # intersect cutter and the group
     tbr=[]
 
     cutter.entities.each{|e| tbr<<e if e.class ==Sketchup::Edge}
+
+    # # imprint the flrs
+    # cutter.entities.intersect_with(
+    #                    true,
+    #                    cutter.transformation,
+    #                    @gp,
+    #                    @gp.transformation,
+    #                    true,
+    #                    dup
+    # )
+
+    # generate the cuts for area
     cutter.entities.intersect_with(
-                       true,
-                       cutter.transformation,
-                       cutter,
-                       cutter.transformation,
-                       true,
-                       @gp
+                      true,
+                      cutter.transformation,
+                      cutter,
+                      cutter.transformation,
+                      true,
+                      dup
     )
+    dup.erase!
+
     #cutter.copy
     # remove outter edges
     for i in 0..tbr.size-1

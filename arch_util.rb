@@ -32,6 +32,43 @@ module ArchUtil
     return result
   end
 
+  def ArchUtil.add_box(org,size,grouped=true,container=nil,unscalled=true)
+    container = Sketchup.active_model if container == nil
+    if grouped
+      gp = container.entities.add_group
+    else
+      gp = container
+    end
+
+
+    xvect=Geom::Vector3d.new(1,0,0)
+    zvect=Geom::Vector3d.new(0,0,1)
+    yvect=zvect.cross(xvect)
+
+    if unscalled
+      size[0] /= container.transformation.xscale
+      size[1] /= container.transformation.yscale
+      size[2] /= container.transformation.zscale
+    end
+
+    xvect.length=size[0]
+    yvect.length=size[1]
+    zvect.length=size[2]  if size[2]!=0
+
+    pts=[]
+    pts<<org
+    pts<<pts[0]+xvect
+    pts<<pts[1]+yvect
+    pts<<pts[0]+yvect
+
+    f=gp.entities.add_face(pts)
+    f.reverse! if f.normal.z<0
+    f.pushpull(zvect.length) if size[2]!=0
+
+
+    return gp
+  end
+
   def ArchUtil.local_cut_face(gp,axis=2,gen_face=true)
     subject=gp
     subjectBound=subject.local_bounds
@@ -92,7 +129,7 @@ module ArchUtil
     return pts_array
   end
 
-  def ArchUtil.scale_3d(gp,scale_array=[1,1,1])
+  def ArchUtil.Transformation_scale_3d(scale_array=[1,1,1])
     x=scale_array[0]
     y=scale_array[1]
     z=scale_array[2]
@@ -102,12 +139,16 @@ module ArchUtil
         0,y,0,0,
         0,0,z,0,
         0,0,0,1
-      ]
+    ]
 
     t=Geom::Transformation.new()
     t.set!(a)
-    gp.transformation *= t
+    return t
+  end
 
+  def ArchUtil.scale_3d(gp,scale_array=[1,1,1])
+    t=ArchUtil.Transformation_scale_3d(scale_array)
+    gp.transformation *= t
   end
 
 

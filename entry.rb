@@ -30,6 +30,7 @@ require File.expand_path('../bh_dimension',__FILE__)
 require File.expand_path('../bh_clear_naked_edge',__FILE__)
 require File.expand_path('../bh_interact',__FILE__)
 require File.expand_path('../bh_apt_circulation',__FILE__)
+require File.expand_path('../bh_apt_components',__FILE__)
 
 
 # prototyping
@@ -43,6 +44,9 @@ require File.expand_path('../bh_apt_display_mode',__FILE__)
 #interaction
 require File.expand_path('../op_dimension.rb',__FILE__)
 require File.expand_path('../wd_interact.rb',__FILE__)
+require File.expand_path('../spatial_module.rb',__FILE__)
+require File.expand_path('../constances.rb',__FILE__)
+
 
 $enableOnEntityAdded=true
 $firstime=true

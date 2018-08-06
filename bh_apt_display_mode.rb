@@ -31,11 +31,17 @@ class BH_Apt_DisplayMode < Arch::BlockUpdateBehaviour
     model= Sketchup.active_model
     model.start_operation('show_units')
 
-    show_units
+    #show_units
 
     model.commit_operation
     @host.enableUpdate=true
   end
+
+  def show_circulation()
+    pts=ArchUtil.local_cut_face(@gp,0,false)
+
+  end
+
 
   def _gen_unit_grids()
     xscale=@gp.transformation.xscale
@@ -104,6 +110,7 @@ class BH_Apt_DisplayMode < Arch::BlockUpdateBehaviour
     f.pushpull(size[2])
   end
 
+  #currently a very slow version
   def show_units()
     @generated_objects.erase! if @generated_objects!=nil and @generated_objects.valid?
     gp=@gp

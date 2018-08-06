@@ -15,9 +15,13 @@ class Op_Dimension
   end
 
 
-
   def self.get_size(gp)
-    group=gp
+    # group=gp
+    group=gp.entities.add_group
+    gp.entities.each{|e|
+      group.entities.add_face(e.vertices) if e.class == Sketchup::Face
+    }
+
     height = (group.local_bounds.max.z * gp.transformation.zscale).to_m.round(3)
 
     width_max = (group.local_bounds.max.x * gp.transformation.xscale).to_m.round(3)
@@ -28,7 +32,20 @@ class Op_Dimension
     depth_min = (group.local_bounds.min.y * gp.transformation.yscale).to_m.round(3)
     depth = depth_max - depth_min
 
+    group.erase!
+
     return width,depth,height
+  end
+
+  def self.local_bound(gp)
+    group=gp.entities.add_group
+    gp.entities.each{|e|
+      group.entities.add_face(e.vertices) if e.class == Sketchup::Face
+    }
+
+    bounds=group.local_bounds
+    group.erase!
+    return bounds
   end
 
   def self.is_equal_size(gp,size)

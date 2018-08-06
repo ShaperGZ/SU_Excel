@@ -54,7 +54,8 @@ class  WD_Interact < SUExcel::WebDialogWrapper
     entity = selection[0]
 
     if entity.class != Sketchup::Group or entity.get_attribute("BuildingBlock","bd_ftfh") == nil
-      _send_to_html("selection is not a smart object")
+      p "selection is not a smart object"
+      #_send_to_html("selection is not a smart object")
       return
     end
 
