@@ -34,9 +34,11 @@ class  WD_Interact < SUExcel::WebDialogWrapper
     @dlg.set_file(file)
     @dlg.set_on_close{close()}
     @dlg.show
+    p 'wd.interact adding action callback'
     @dlg.add_action_callback("updateAttr"){|dialog,params|update_attr(params)}
     @dlg.add_action_callback("normal_mode"){|dialog,params|normal_mode()}
     @dlg.add_action_callback("unit_mode"){|dialog,params|unit_mode()}
+    @dlg.add_action_callback("update_all"){|dialog,params|update_all(params)}
     @visible=true
     onSelectionBulkChange(Sketchup.active_model.selection)
   end
@@ -48,7 +50,6 @@ class  WD_Interact < SUExcel::WebDialogWrapper
 
   def onSelectionBulkChange(selection)
     if selection.size != 1
-      close
       return
     end
     entity = selection[0]
@@ -67,18 +68,21 @@ class  WD_Interact < SUExcel::WebDialogWrapper
   end
 
   def normal_mode()
+    p 'switching to normal mode'
     return if @subjectGP==nil or @subjectBB ==nil
     display_mode=@subjectBB.get_updator_by_type(BH_Apt_DisplayMode)
-    display_mode.show(false)
+    display_mode.show(false) if display_mode != nil
   end
 
   def unit_mode()
+    p 'switching to unit mode'
     return if @subjectGP==nil or @subjectBB ==nil
     display_mode=@subjectBB.get_updator_by_type(BH_Apt_DisplayMode)
-    display_mode.show()
+    display_mode.show() if display_mode != nil
   end
 
   def update_attr(params)
+    p "wd_interact.update_attr #{params}"
     trunks=params.split('|')
     key=trunks[0]
     value=_convert_num_param(trunks[1])
@@ -87,6 +91,26 @@ class  WD_Interact < SUExcel::WebDialogWrapper
     gp.set_attribute("BuildingBlock",key,value)
 
     # update size
+
+    w=gp.get_attribute("BuildingBlock","bd_width")
+    d=gp.get_attribute("BuildingBlock","bd_depth")
+    h=gp.get_attribute("BuildingBlock","bd_height")
+
+    size=[w,d,h]
+    BH_Interact.set_bd_size(gp,size)
+  end
+
+  def update_all(params)
+    p "update all attr from wd message= #{params}"
+    gp=@subjectGP
+    trunks=params.split(',')
+    trunks.each{|pair|
+      pair_items=pair.split(':')
+      key=pair_items[0]
+      val=pair_items[1]
+      gp.set_attribute("BuildingBlock",key,_convert_num_param(val))
+    }
+
     w=gp.get_attribute("BuildingBlock","bd_width")
     d=gp.get_attribute("BuildingBlock","bd_depth")
     h=gp.get_attribute("BuildingBlock","bd_height")
@@ -104,7 +128,4 @@ class  WD_Interact < SUExcel::WebDialogWrapper
       return result
     end
   end
-
-
-
 end

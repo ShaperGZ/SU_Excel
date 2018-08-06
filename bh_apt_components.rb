@@ -15,15 +15,14 @@ class BH_AptComponents < Arch::BlockUpdateBehaviour
   def get_by_type(name)
     result=[]
     @components.each {|c|
-      if c.get_attribute("BuildingComponent","type") != nil
-        if c.get_attribute("BuildingComponent","type")==name
+      type_name = c.get_attribute("BuildingComponent","type")
+      if type_name != nil
+        if type_name==name
           result<<c
-          p " + #{c.get_attribute("BuildingComponent","type")}"
-        else
-          p " - #{c.get_attribute("BuildingComponent","type")}"
         end
       end
     }
+    return result
   end
 
   def clear

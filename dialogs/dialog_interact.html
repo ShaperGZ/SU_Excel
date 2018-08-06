@@ -8,6 +8,10 @@
         }
     </style>
     <script>
+        function get_items(){
+            var result=["bd_width","bd_depth","bd_height"]
+            return result
+        }
         function testSetVal(){
             setValue('bd_width','entered2')
         }
@@ -18,12 +22,26 @@
             window.location = "skp:unit_mode@";
         }
 
+        function update_all(){
+            items=get_items();
+            message='';
+            for(i =0; i<items.length;i++){
+                var id = items[i];
+                var val = document.getElementById(id).value;
+                trunk = id+":"+val
+                if (i<items.length-1){
+                    trunk += ",";
+                }
+                message+=trunk;
+            }
+            window.location = "skp:update_all@"+message;
+        }
+
         function setValue(key,value){
             ele=document.getElementById(key)
             if (ele){
                 ele.value=value;
             }
-
         }
     </script>
 
@@ -33,9 +51,9 @@
         <tbody>
         <tr>
             <td>
+                <button id="b_core"  onclick="update_all()" style="width:50pt">Update</button>
                 <button id="b_normal"  onclick="normal_mode()" style="width:50pt">Normal</button>
                 <button id="b_units"  onclick="unit_mode()" style="width:50pt">Units</button>
-                <button id="b_core"  onclick="testSetVal()" style="width:50pt">Core</button>
             </td>
         </tr>
         </tbody>
@@ -81,7 +99,7 @@
             })
     }
 
-    var items=["bd_width","bd_depth","bd_height"]
+    var items=get_items()
     for(i =0; i<items.length;i++){
 
         var name=items[i];

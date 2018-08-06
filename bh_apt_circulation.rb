@@ -27,7 +27,14 @@ class BH_Apt_Circulation < Arch::BlockUpdateBehaviour
     if circulation == nil
       p " can not get a proper circulation from componetns"
     end
+
+    p "components.get_by_type('clt').size=#{circulation.size}"
+    circulation.each{|c|
+      p "c:#{c.to_s} type_name=#{c.get_attribute("BuildingComponent","type")}"
+    }
+
     circulation=circulation[0]
+
     clt_size=Op_Dimension.get_size(circulation)
     p "circulation.class = #{circulation.class}"
 
@@ -42,33 +49,32 @@ class BH_Apt_Circulation < Arch::BlockUpdateBehaviour
     spaces=[]
     # 直线板式
     if bd_depth < 25
-
-
       if bd_width <= 42
         pos=[bd_width/2,core_y]
         size=[12,10]
         cores<<[pos,size]
-        spaces<<Spatial::Box.new(size,pos,nil,SpatialType::F_STR,@gp)
+        spaces<<Spatial::Box.new(size,pos,nil,SpatialType::CMP_CIRCULATION,@gp,Alignment::S)
 
       elsif bd_width <= 60
         pos1=[bd_width/3,core_y]
         size1=[3,8]
         # cores<<[pos1,size1]
-        spaces<<Spatial::Box.new(size1,pos1,nil,SpatialType::F_STR,@gp)
+        spaces<<Spatial::Box.new(size1,pos1,nil,SpatialType::F_STR,@gp,Alignment::S)
 
         pos2=[(bd_width * 0.75)-3,core_y]
         size2=[9,10]
         # cores<<[pos2,size2]
-        spaces<<Spatial::Box.new(size2,pos2,nil,SpatialType::F_STR,@gp)
+        spaces<<Spatial::Box.new(size2,pos2,nil,SpatialType::CMP_CIRCULATION,@gp,Alignment::S)
+
       else bd_width <= 72
         pos1=[15,0]
         size1=[3,8]
         # cores<<[pos1,size1]
-        spaces<<Spatial::Box.new(size1,pos1,nil,SpatialType::F_STR,@gp)
+        spaces<<Spatial::Box.new(size1,pos1,nil,SpatialType::F_STR,@gp,Alignment::S)
 
         pos2=[(bd_width-30)/2 + 30,core_y]
         size2=[12,10]
-        spaces<<Spatial::Box.new(size2,pos2,nil,SpatialType::F_STR,@gp)
+        spaces<<Spatial::Box.new(size2,pos2,nil,SpatialType::CMP_CIRCULATION,@gp,Alignment::S)
         # cores<<[pos2,size2]
       end
 
@@ -80,12 +86,9 @@ class BH_Apt_Circulation < Arch::BlockUpdateBehaviour
 
         end
 
-
       # 双边客房
       else
-
       end
-
 
     end
     regen_spaces(spaces)
@@ -106,8 +109,14 @@ class BH_Apt_Circulation < Arch::BlockUpdateBehaviour
     container=@gp.entities.add_group
     p "container= #{container}"
     spaces.each{|s|
-      p "height#{height}"
+      p "height #{height} s.function=#{s.function}"
       s.get_geometry(container,height,@gp)
+      # if s.function == SpatialType::CMP_CIRCULATION
+      #   p " interpreting"
+      #   Spatial.interpret_core_flbf(s,container,height,@gp)
+      # else
+      #   s.get_geometry(container,height,@gp)
+      # end
     }
 
     @core_geo=container
