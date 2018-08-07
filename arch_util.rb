@@ -32,7 +32,7 @@ module ArchUtil
     return result
   end
 
-  def ArchUtil.add_box(org,size,grouped=true,container=nil,unscalled=true)
+  def ArchUtil.add_box(pos,size,grouped=true,container=nil,unscalled=true, alignment=Alignment::SW)
     container = Sketchup.active_model if container == nil
     if grouped
       gp = container.entities.add_group
@@ -54,6 +54,31 @@ module ArchUtil
     xvect.length=size[0]
     yvect.length=size[1]
     zvect.length=size[2]  if size[2]!=0
+    halfx=xvect.clone
+    halfx.length=xvect.length/2
+    halfy=yvect.clone
+    halfy.length=halfy.length/2
+
+    case(alignment)
+    when Alignment::SW
+      org = pos
+    when Alignment::SE
+      org = pos - xvect
+    when Alignment::NW
+      org = pos - yvect
+    when Alignment::NE
+      org = pos - xvect - yvect
+    when Alignment::S
+      org = pos - halfx
+    when Alignment::N
+      org = pos - halfx - yvect
+    when Alignment::W
+      org = pos - halfy
+    when Alignment::E
+      org = pos - halfx - xvect
+    else
+      org = pos - halfx - halfy
+    end
 
     pts=[]
     pts<<org

@@ -16,6 +16,8 @@ class BH_Apt_Circulation < Arch::BlockUpdateBehaviour
   def invalidate()
     bd_width=@host.attr("bd_width")
     bd_depth=@host.attr("bd_depth")
+    bd_height=@host.attr("bd_height")
+    h=bd_height+3
 
     components=@host.get_updator_by_type(BH_AptComponents)
     if components == nil
@@ -47,33 +49,34 @@ class BH_Apt_Circulation < Arch::BlockUpdateBehaviour
 
     cores=[]
     spaces=[]
+
     # 直线板式
     if bd_depth < 25
       if bd_width <= 42
         pos=[bd_width/2,core_y]
-        size=[12,10]
+        size=[12,10,h]
         cores<<[pos,size]
         spaces<<Spatial::Box.new(size,pos,nil,SpatialType::CMP_CIRCULATION,@gp,Alignment::S)
 
       elsif bd_width <= 60
         pos1=[bd_width/3,core_y]
-        size1=[3,8]
+        size1=[3,8,h]
         # cores<<[pos1,size1]
         spaces<<Spatial::Box.new(size1,pos1,nil,SpatialType::F_STR,@gp,Alignment::S)
 
         pos2=[(bd_width * 0.75)-3,core_y]
-        size2=[9,10]
+        size2=[9,10,h]
         # cores<<[pos2,size2]
         spaces<<Spatial::Box.new(size2,pos2,nil,SpatialType::CMP_CIRCULATION,@gp,Alignment::S)
 
       else bd_width <= 72
         pos1=[15,0]
-        size1=[3,8]
+        size1=[3,8,h]
         # cores<<[pos1,size1]
         spaces<<Spatial::Box.new(size1,pos1,nil,SpatialType::F_STR,@gp,Alignment::S)
 
         pos2=[(bd_width-30)/2 + 30,core_y]
-        size2=[12,10]
+        size2=[12,10,h]
         spaces<<Spatial::Box.new(size2,pos2,nil,SpatialType::CMP_CIRCULATION,@gp,Alignment::S)
         # cores<<[pos2,size2]
       end
@@ -96,7 +99,10 @@ class BH_Apt_Circulation < Arch::BlockUpdateBehaviour
   end
 
   def clear()
-    @core_geo.erase! if @core_geo!=nil and @core_geo.valid?
+    return if @core_geo == nil
+    @core_geo.each{|g|
+      g.erase! if g!=nil and g.valid?
+    }
   end
 
   def regen_spaces(spaces)
@@ -106,11 +112,12 @@ class BH_Apt_Circulation < Arch::BlockUpdateBehaviour
     p '1 regen_spaces'
     height=@host.attr("bd_height") + 3
     height = height.m
-    container=@gp.entities.add_group
-    p "container= #{container}"
+    containers=[]
+    # container=@gp.entities.add_group
     spaces.each{|s|
       p "height #{height} s.function=#{s.function}"
-      s.get_geometry(container,height,@gp)
+      g=s.get_geometry(@gp,true)
+      containers<<g
       # if s.function == SpatialType::CMP_CIRCULATION
       #   p " interpreting"
       #   Spatial.interpret_core_flbf(s,container,height,@gp)
@@ -119,7 +126,7 @@ class BH_Apt_Circulation < Arch::BlockUpdateBehaviour
       # end
     }
 
-    @core_geo=container
+    @core_geo=containers
 
   end
 

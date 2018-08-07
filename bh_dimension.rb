@@ -16,6 +16,8 @@ class BH_Dimension < Arch::BlockUpdateBehaviour
   end
 
   def invalidate()
+    #作用是把实际尺寸记录在组里
+
     # TODO：
     # 1. 通过bounds.max.z - bounds.min.z 提取高度信息
     # @gp.bounds.max.z
