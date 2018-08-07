@@ -18,10 +18,17 @@ class BH_Generator < Arch::BlockUpdateBehaviour
     set_generator("level1", Generators::Gen_Cores.new(self))
     set_generator("level2", Generators::Decompose_FLBF.new(self))
     set_generator("level2", Generators::Decompose_F_STR.new(self))
+    set_generator("level2", Generators::Gen_Units.new(self))
+    set_generator("level2", Generators::Gen_Area.new(self))
+  end
+
+  def gp()
+    return @host.gp
   end
 
   def clear_spaces()
     (1..3).each{|i| @spaces["level#{i}"].each{|g| g.erase! if g.valid?}}
+    @spaces = {"level1"=>[], "level2"=>[],"level3"=>[]}
   end
 
   def onChangeEntity(e, invalidated)
@@ -29,6 +36,13 @@ class BH_Generator < Arch::BlockUpdateBehaviour
     return if not invalidated[2]
     # TODO: get size, and determine which generator to be used for invalidating
     invalidate(true)
+
+    objs=[]
+    objs+=@spaces["level1"]
+    objs+=@spaces["level2"]
+    objs+=@spaces["level3"]
+
+    p "entities remain: #{objs.size}"
   end
 
   def invalidate(forced=false)
@@ -50,7 +64,7 @@ class BH_Generator < Arch::BlockUpdateBehaviour
   def get_spaces(level,spatial_type=nil)
     result=[]
     if spatial_type == nil
-      return @spaces[level].values.clone
+      return @spaces[level].clone
     end
     @spaces[level].each{|s|
       if s.valid?

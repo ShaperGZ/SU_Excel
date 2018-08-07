@@ -78,7 +78,7 @@ module Generators
         sizes<<[size[0],rw,size[2]]
         sizes<<[size[0],circulation_w,size[2]]
 
-        types=["room","clt"]
+        types=["occupy","clt"]
 
       elsif size[1]<=25.m
         rw=(size[1]-circulation_w)/2
@@ -92,7 +92,7 @@ module Generators
         sizes<<[size[0],circulation_w,size[2]]
         sizes<<[size[0],rw,size[2]]
 
-        types=["room","clt","room"]
+        types=["occupy","clt","occupy"]
       end
 
       # 3. get actual geometries
@@ -203,6 +203,45 @@ module Generators
     end
   end
 
+  class Gen_Units < SpatialGenerator
+    def initialize(host)
+      @host=host
+    end
+
+    def generate()
+      model= Sketchup.active_model
+      model.start_operation('gen units')
+
+      occupy= host.get_spaces("level1","occupy")
+      occupy.each{|c|
+        gen_units(c)
+      }
+
+      model.commit_operation
+    end
+
+    def gen_units(occupy)
+
+
+      # size=Op_Dimension.get_size(occupy, @host.gp)
+      # ftfhs=@host.host.attr("bd_ftfhs")
+      # bays=[@host.host.attr("un_width")]
+      # levels=Op_Dimension.divide_length(occupy,ftfhs,2, true, @host.gp,@host.gp)
+      # objs=[]
+      # for i in 0..levels.size-1
+      #   l=levels[i]
+      #   objs+=Op_Dimension.divide_length(l,bays,0, true, @host.gp,@host.gp)
+      #   l.erase!
+      # end
+      #
+      #
+      # objs.each{|o|
+      #
+      #   add_geometry("level2",o,"room_unit")
+      # }
+    end
+  end
+  
   class Decompose_FLBF < SpatialGenerator
     def initialize(host)
       @host=host
@@ -303,4 +342,76 @@ module Generators
     end
   end
 
+  class Gen_Area < SpatialGenerator
+    def initialize(host)
+      @host=host
+    end
+
+    def generate()
+      objs=host.get_spaces("level1")
+      objs+=host.get_spaces("level2")
+      objs+=host.get_spaces("level3")
+      area = _join_area(objs, @host.gp)
+      # area = _join_area(objs)
+      @host.gp.set_attribute("BuildingBlock","bd_area",area.round(2))
+
+      service_obj=[]
+      occupy_count=0
+      objs.each{|o|
+        if o.valid?
+          t=o.get_attribute("BuildingComponent","type")
+          if t !=nil and t!="occupy"
+            service_obj<<o
+          else
+            occupy_count+=1
+          end
+        end
+
+      }
+      p "occupy_count=#{occupy_count}"
+      p "@host.gp=#{@host.gp}"
+      # service_area=_join_area(service_obj)
+      service_area=_join_area(service_obj, @host.gp)
+      efficiency=(area-service_area)/area
+      p "area=#{area.to_s} service_area=#{service_area}"
+      p "efficiency="+efficiency.to_s
+
+      @host.gp.set_attribute("BuildingBlock","grade_efficiency",efficiency.round(2))
+
+    end
+
+    def _join_area(objs, transform_ref=nil)
+      dup=ArchUtil.union_groups(objs)
+      p "dup.xscale=#{dup.transformation.xscale}"
+      ArchUtil.remove_coplanar_edges(dup.entities)
+      it=dup.transformation.inverse
+
+
+      faces=[]
+      dup.entities.each{|e|
+        faces<<e if e.class == Sketchup::Face and e.normal.z==-1
+      }
+
+      area=0
+      unscaled=Sketchup.active_model.entities.add_group
+      t=transform_ref.transformation
+      faces.each{|f|
+        pts=[]
+        for i in 0..f.vertices.size-1
+          pts<<(f.vertices[i].position.transform t)
+        end
+
+        nf=unscaled.entities.add_face(pts)
+        area+=nf.area.to_m.to_m
+      }
+      # unscaled.transformation *= transform_ref.transformation
+
+      unscaled.erase!
+      dup.erase!
+      return area
+    end
+
+
+
+  end
 end

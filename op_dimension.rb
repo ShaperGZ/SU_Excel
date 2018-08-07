@@ -93,12 +93,12 @@ class Op_Dimension
     else
       scales=[1,1,1]
     end
-    p "scales=#{scales}"
+    # p "scales=#{scales}"
     size=Op_Dimension.get_size(gp, untransformation_ref, groupped=false)
     for i in 0..2
       size[i]
     end
-    p "size=#{size}"
+    # p "size=#{size}"
     # get the read divs base on actual size
     adj_divs=[]
     curr=0
@@ -111,15 +111,13 @@ class Op_Dimension
         index=divs.size-1
       end
       d=(divs[index])
-      p "d=#{d}"
+      # p "d=#{d}"
       adj_divs<<d
       curr+=d
       counter+=1
     end
 
-    adj_divs.each{|d|
-      p "adj_divs d=#{d}"
-    }
+
 
     # create the objects
     geos=[]
@@ -138,7 +136,7 @@ class Op_Dimension
         end
       end
 
-      p s.x.to_m
+      #p s.x.to_m
 
       if i>0
         v=Geom::Vector3d.new(0,0,0)
