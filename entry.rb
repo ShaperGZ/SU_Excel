@@ -49,6 +49,7 @@ require File.expand_path('../constances.rb',__FILE__)
 
 #generator
 require File.expand_path('../generators.rb',__FILE__)
+require File.expand_path('../definitions.rb',__FILE__)
 
 
 $enableOnEntityAdded=true

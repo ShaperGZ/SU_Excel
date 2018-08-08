@@ -39,6 +39,7 @@ class  WD_Interact < SUExcel::WebDialogWrapper
     @dlg.add_action_callback("normal_mode"){|dialog,params|normal_mode()}
     @dlg.add_action_callback("unit_mode"){|dialog,params|unit_mode()}
     @dlg.add_action_callback("update_all"){|dialog,params|update_all(params)}
+    @dlg.add_action_callback("def_reload"){|dialog,params|def_reload(params)}
     @visible=true
     onSelectionBulkChange(Sketchup.active_model.selection)
   end
@@ -115,7 +116,18 @@ class  WD_Interact < SUExcel::WebDialogWrapper
     d=gp.get_attribute("BuildingBlock","bd_depth")
     h=gp.get_attribute("BuildingBlock","bd_height")
     size=[w,d,h]
-    BH_Interact.set_bd_size(gp,size)
+    update=BH_Interact.set_bd_size(gp,size)
+    if not update
+      bd=BuildingBlock.created_objects[gp]
+      bd.invalidate()
+    end
+
+  end
+
+  def def_reload(param)
+    p "loading definition..."
+    Definitions.reload()
+    p "def lodaded: #{Definitions.defs}"
   end
 
   def _convert_num_param(val)

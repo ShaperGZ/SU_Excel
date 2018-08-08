@@ -15,6 +15,14 @@ module Generators
       @host.spaces[level]<<geo
     end
 
+    def create_def_holder(params)
+      level="level2"
+      position=params[0]
+      size=params[1]
+      defname=params[2]
+      create_geometry(level,position,size,defname,Alignment::SW,true)
+    end
+
     def create_geometry(level,position,size,type_name, alignment=Alignment::SW, meter=false, color=nil)
       p=position
       s=size
@@ -99,8 +107,6 @@ module Generators
       return if pos.size==0
       zero=Geom::Point3d.new(0,0,0)
 
-
-
       for i in 0..pos.size-1
         create_geometry("level1",pos[i],sizes[i],types[i])
       end
@@ -123,12 +129,89 @@ module Generators
       }
     end
 
+    def get_color(e)
+      if e.class==Sketchup::Group
+        ents=e.entities
+      elsif e.class == Sketchup::ComponentInstance
+        ents=e.definition.entities
+      else
+        return
+      end
+
+      faces=[]
+      ents.each{ |f| faces<<f if f.class == Sketchup::Face }
+      p "mat=#{faces[0].material} "
+      return faces[0].material
+    end
+
+    def load_from_ent(e,org,h)
+
+
+      diagonal=e.bounds.max - e.bounds.min
+      size=[1,1,0]
+      for i in 0..1
+        size[i]=diagonal[i].to_m
+      end
+      size[2]=h
+
+      position = [org[0] + e.bounds.min[0].to_m, org[1]+e.bounds.min[1].to_m]
+
+
+      return [position,size,e.name, get_color(e)]
+
+    end
+    def load_from_def(position,def_name, alignment=nil, h=0)
+      blocks=[]
+      d=Definitions.defs[def_name+".skp"]
+      return if d == nil
+      # get size and cal org
+      diagonal=d.bounds.max - d.bounds.min
+      size=[1,1,0]
+      for i in 0..1
+        size[i]=diagonal[i].to_m
+      end
+      size[2]=h
+
+
+      scales=[
+          host.gp.transformation.xscale,
+          host.gp.transformation.yscale,
+          host.gp.transformation.zscale
+      ]
+      p "position=#{position.x},#{position.y}"
+
+      position=Geom::Point3d.new(position[0].m, position[1].m,0)
+
+      g = @host.host.gp.entities.add_instance(d,Geom::Transformation.new)
+      g.transformation = Geom::Transformation.new
+
+      ts = ArchUtil.Transformation_scale_3d([1/scales[0],1/scales[1],h])
+      tt =  Geom::Transformation.translation(position)
+
+      g.transformation *= (ts*tt)
+
+      #g.transform! t0
+
+      @host.spaces["def_blocks"]<<g
+
+      return g
+    end
+
     def gen_core(circulation)
       # TODO: once we have abstract components, will
       # get size from abstract components
       bd_width=@host.host.attr("bd_width")
       bd_depth=@host.host.attr("bd_depth")
       bd_height=@host.host.attr("bd_height")
+
+      lift_count=@host.host.attr("apt_lift_count")
+
+
+      if lift_count == 0
+        lift_count=3
+      end
+      lift_count=lift_count.to_i
+      p "lift_count=#{lift_count})"
 
       yscale=@host.gp.transformation.yscale
       clt_y=circulation.transformation.origin.y.to_m * yscale
@@ -141,30 +224,65 @@ module Generators
       positions=[]
       sizes=[]
       types=[]
+      defs=[]
+
+      evac=15
+      width_thresholds=[]
+      width_thresholds << evac*2 + 8
+      width_thresholds << evac*4
+      width_thresholds << width_thresholds[0]+30
+      width_thresholds << evac*5
+      width_thresholds << evac*6
 
       if bd_depth < 25
-        if bd_width <= 42
-          positions<< [bd_width/2,core_y]
-          sizes<<[12,10,h]
-          types<<"comp_clt"
+        if bd_width <= width_thresholds[0]
+          pos = [bd_width/2,core_y]
+          def_name="core_apt_lft_L#{lift_count}_S2"
+          defs<<load_from_def(pos,def_name,nil,h)
 
-        elsif bd_width <= 60
-          positions<<[bd_width/3,core_y]
-          sizes<<[3,8,h]
-          types<<"f_str"
+        elsif bd_width <= width_thresholds[1]
+          pos = [bd_width/3,core_y]
+          def_name="core_apt_str"
+          defs<<load_from_def(pos,def_name,nil,h)
 
-          positions<<[(bd_width * 0.75)-3,core_y]
-          sizes<<[9,10,h]
-          types<<"comp_clt"
+          pos =[(bd_width * 0.75)-3,core_y]
+          def_name="core_apt_lft_L#{lift_count}"
+          defs<<load_from_def(pos,def_name,nil,h)
 
-        else bd_width <= 72
-          positions<<[15,0]
-          sizes<<[3,8,h]
-          types<<"f_str"
+        elsif bd_width <= width_thresholds[2]
+          pos =[15,core_y]
+          def_name="core_apt_str"
+          defs<<load_from_def(pos,def_name,nil,h)
 
-          positions<<[(bd_width-30)/2 + 30,core_y]
-          sizes<<[12,10,h]
-          types<<"comp_clt"
+          pos =[(bd_width-30)/2 + 30,core_y]
+          def_name="core_apt_lft_L#{lift_count}_S2"
+          defs<<load_from_def(pos,def_name,nil,h)
+
+        elsif bd_width <= width_thresholds[3]
+          pos =[15,core_y]
+          def_name="core_apt_str"
+          defs<<load_from_def(pos,def_name,nil,h)
+
+          pos =[45,core_y]
+          def_name="core_apt_lft_L#{lift_count}"
+          defs<<load_from_def(pos,def_name,nil,h)
+
+          pos =[bd_width-1.2,core_y]
+          def_name="core_apt_str"
+          defs<<load_from_def(pos,def_name,nil,h)
+
+        elsif bd_width <= width_thresholds[4]
+          pos =[15,core_y]
+          def_name="core_apt_str"
+          defs<<load_from_def(pos,def_name,nil,h)
+
+          pos =[45,core_y]
+          def_name="core_apt_lft_L#{lift_count}"
+          defs<<load_from_def(pos,def_name,nil,h)
+
+          pos =[45+(bd_width-45)/2.0,core_y]
+          def_name="core_apt_str"
+          defs<<load_from_def(pos,def_name,nil,h)
         end
 
         # 单边客房
@@ -181,25 +299,25 @@ module Generators
 
       # create geometries
 
-      zero=Geom::Point3d.new(0,0,0)
-      scales=[
-          host.gp.transformation.xscale,
-          host.gp.transformation.yscale,
-          host.gp.transformation.zscale
-      ]
+      # zero=Geom::Point3d.new(0,0,0)
+      # scales=[
+      #     host.gp.transformation.xscale,
+      #     host.gp.transformation.yscale,
+      #     host.gp.transformation.zscale
+      # ]
 
-      for i in 0..positions.size-1
 
-        for j in 0..positions[i].size-1
-          positions[i][j] /= scales[j]
-        end
-        p=positions[i]
-        s=sizes[i]
-        t=types[i]
-        p "p=#{p}, s=#{s}, t=#{t}"
-        create_geometry("level2",p,s,t, Alignment::S,true)
-
-      end
+      # for i in 0..positions.size-1
+      #   for j in 0..positions[i].size-1
+      #     positions[i][j] /= scales[j]
+      #   end
+      #   p=positions[i]
+      #   s=sizes[i]
+      #   t=types[i]
+      #   p "p=#{p}, s=#{s}, t=#{t}"
+      #   create_geometry("level2",p,s,t, Alignment::S,true)
+      #
+      # end
     end
   end
 
@@ -241,10 +359,11 @@ module Generators
       # }
     end
   end
-  
+
+
   class Decompose_FLBF < SpatialGenerator
     def initialize(host)
-      @host=host
+      super(host)
     end
 
     def generate()

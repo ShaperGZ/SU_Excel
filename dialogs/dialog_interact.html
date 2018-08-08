@@ -8,8 +8,11 @@
         }
     </style>
     <script>
+        function def_reload(){
+            window.location = "skp:def_reload@";
+        }
         function get_items(){
-            var result=["bd_width","bd_depth","bd_height"]
+            var result=["bd_width","bd_depth","bd_height","apt_lift_count","un_width"]
             return result
         }
         function testSetVal(){
@@ -54,6 +57,7 @@
                 <button id="b_core"  onclick="update_all()" style="width:50pt">Update</button>
                 <button id="b_normal"  onclick="normal_mode()" style="width:50pt">Normal</button>
                 <button id="b_units"  onclick="unit_mode()" style="width:50pt">Units</button>
+                <button id="b_def_reload"  onclick="def_reload()" style="width:50pt">reload</button>
             </td>
         </tr>
         </tbody>
@@ -87,6 +91,10 @@
             <tr>
                 <td><span class ="text'">un_width</span></td>
                 <td><input id="un_width" type="text" class="text"></td>
+            </tr>
+            <tr>
+                <td><span class ="text'">apt_lift_count</span></td>
+                <td><input id="apt_lift_count" type="text" class="text"></td>
             </tr>
             <tr>
                 <td><span class ="text'">p_bd_width</span></td>

@@ -3,6 +3,7 @@ $m2inchsq=1550.0031
 $genName="SCRIPTGENERATEDOBJECTS"
 
 module ArchUtil
+
   # input gps: list of groups
   # output is a group as result of a union of all input groups
   def ArchUtil.union_groups(igps)

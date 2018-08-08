@@ -10,14 +10,16 @@ class BH_Generator < Arch::BlockUpdateBehaviour
     #p 'f=initialized constrain face'
     super(gp,host)
     @generators = {"level1"=>{}, "level2"=>{},"level3"=>{}}
-    @spaces = {"level1"=>[], "level2"=>[],"level3"=>[]}
+    @spaces_keys=["level1","level2","level3","def_holders","def_blocks"]
+    @spaces = {}
+    @spaces_keys.each{|k| @spaces[k] = []}
     @invalidated =true
     #--------- finish basic initialization -----------------
 
     set_generator("level1", Generators::Gen_Apt_Straight.new(self))
     set_generator("level1", Generators::Gen_Cores.new(self))
-    set_generator("level2", Generators::Decompose_FLBF.new(self))
-    set_generator("level2", Generators::Decompose_F_STR.new(self))
+    # set_generator("level2", Generators::Decompose_FLBF.new(self))
+    # set_generator("level2", Generators::Decompose_F_STR.new(self))
     set_generator("level2", Generators::Gen_Units.new(self))
     set_generator("level2", Generators::Gen_Area.new(self))
   end
@@ -27,8 +29,8 @@ class BH_Generator < Arch::BlockUpdateBehaviour
   end
 
   def clear_spaces()
-    (1..3).each{|i| @spaces["level#{i}"].each{|g| g.erase! if g.valid?}}
-    @spaces = {"level1"=>[], "level2"=>[],"level3"=>[]}
+    @spaces_keys.each{|k| @spaces[k].each{|g| g.erase! if g.valid?}}
+    @spaces_keys.each{|k| @spaces[k] = []}
   end
 
   def onChangeEntity(e, invalidated)
