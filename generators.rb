@@ -37,12 +37,12 @@ module Generators
         end
       end
 
-
       zero=Geom::Point3d.new(0,0,0)
       offset=Geom::Transformation.translation(p)
       comp=ArchUtil.add_box(zero,s,true,@host.gp,true, alignment)
       comp.transformation *= offset
       comp.set_attribute("BuildingComponent","type",t)
+      comp.name=type_name
       if color !=nil
         comp.material=color
       end
@@ -144,22 +144,6 @@ module Generators
       return faces[0].material
     end
 
-    def load_from_ent(e,org,h)
-
-
-      diagonal=e.bounds.max - e.bounds.min
-      size=[1,1,0]
-      for i in 0..1
-        size[i]=diagonal[i].to_m
-      end
-      size[2]=h
-
-      position = [org[0] + e.bounds.min[0].to_m, org[1]+e.bounds.min[1].to_m]
-
-
-      return [position,size,e.name, get_color(e)]
-
-    end
     def load_from_def(position,def_name, alignment=nil, h=0)
       blocks=[]
       d=Definitions.defs[def_name+".skp"]
@@ -185,9 +169,10 @@ module Generators
       g = @host.host.gp.entities.add_instance(d,Geom::Transformation.new)
       g.transformation = Geom::Transformation.new
 
-      ts = ArchUtil.Transformation_scale_3d([1/scales[0],1/scales[1],h])
+      ts = ArchUtil.Transformation_scale_3d([1/scales[0],1/scales[1],h/scales[2]])
       tt =  Geom::Transformation.translation(position)
 
+      g.name=def_name
       g.transformation *= (ts*tt)
 
       #g.transform! t0
@@ -441,6 +426,7 @@ module Generators
 
     def generate()
       # 1 get circulation, name= "clt"
+
       fstr= host.get_spaces("level2","f_str")
       fstr.each{|c|
         gen_fstr(c)
@@ -467,44 +453,66 @@ module Generators
     end
 
     def generate()
-      objs=host.get_spaces("level1")
-      objs+=host.get_spaces("level2")
-      objs+=host.get_spaces("level3")
-      area = _join_area(objs, @host.gp)
+      host=@host
+      pure_objs=host.get_spaces("level1")
+      pure_objs+=host.get_spaces("level2")
+      pure_objs+=host.get_spaces("level3")
+
+      def_inst=host.get_spaces("def_blocks")
+      def_ents=[]
+      def_inst.each{|i| def_ents+=get_gpinst(i)}
+
+      area_objs=pure_objs+def_ents
+      area_objs = ArchUtil.copy_entities(area_objs)
+      area = _join_area(area_objs, @host.gp)
+
       # area = _join_area(objs)
       @host.gp.set_attribute("BuildingBlock","bd_area",area.round(2))
 
       service_obj=[]
-      occupy_count=0
-      objs.each{|o|
+      pure_objs.each{|o|
         if o.valid?
           t=o.get_attribute("BuildingComponent","type")
           if t !=nil and t!="occupy"
             service_obj<<o
-          else
-            occupy_count+=1
           end
         end
-
       }
-      p "occupy_count=#{occupy_count}"
-      p "@host.gp=#{@host.gp}"
-      # service_area=_join_area(service_obj)
+
+      service_obj+=def_ents
+      service_obj=ArchUtil.copy_entities(service_obj)
       service_area=_join_area(service_obj, @host.gp)
       efficiency=(area-service_area)/area
       p "area=#{area.to_s} service_area=#{service_area}"
-      p "efficiency="+efficiency.to_s
+      # p "efficiency="+efficiency.to_s
 
       @host.gp.set_attribute("BuildingBlock","grade_efficiency",efficiency.round(2))
 
+      ArchUtil.remove_ents( def_ents )
+      ArchUtil.remove_ents( area_objs )
+      ArchUtil.remove_ents( service_obj )
+    end
+
+    # get groups and instances from within a group
+    def get_gpinst(inst)
+      dup=inst.copy
+      ents=[]
+      exploded=dup.explode
+      for i in 0..exploded.size-1
+        e=exploded[i]
+        if e.class == Sketchup::Group or e.class == Sketchup::ComponentInstance
+          ents<<e
+        else
+          e.erase! if e.valid? and (e.class== Sketchup::Edge or e.class==Sketchup::Face)
+        end
+      end
+      return ents
     end
 
     def _join_area(objs, transform_ref=nil)
-      dup=ArchUtil.union_groups(objs)
-      p "dup.xscale=#{dup.transformation.xscale}"
+      dup=ArchUtil.union_groups(objs,false)
+      #p "dup.xscale=#{dup.transformation.xscale}"
       ArchUtil.remove_coplanar_edges(dup.entities)
-      it=dup.transformation.inverse
-
 
       faces=[]
       dup.entities.each{|e|
@@ -525,6 +533,7 @@ module Generators
       }
       # unscaled.transformation *= transform_ref.transformation
 
+      #dup.transformation = Geom::Transformation.translation([200.m,0,0])
       unscaled.erase!
       dup.erase!
       return area

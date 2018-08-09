@@ -4,22 +4,47 @@ $genName="SCRIPTGENERATEDOBJECTS"
 
 module ArchUtil
 
+  def ArchUtil.copy_entities(ents)
+    dups=[]
+    ents.each{|e|
+      dups<< e.copy if e!=nil and e.valid? and (e.class ==Sketchup::Group or e.class ==Sketchup::ComponentInstance)
+    }
+    return dups
+  end
+
   # input gps: list of groups
   # output is a group as result of a union of all input groups
-  def ArchUtil.union_groups(igps)
+  def ArchUtil.union_groups(igps,duplicate=true)
+
     gps=[]
     igps.each{|e|
-      gps<<e if e!=nil and e.class==Sketchup::Group and e.valid?
+      next if (
+          e ==nil or
+          not(e.class ==Sketchup::Group or e.class ==Sketchup::ComponentInstance) or
+          !e.valid?
+      )
+      gps<<e
     }
+    return nil if gps.size==0
 
-    g0=gps[0].copy
-    for i in 1..gps.size-1
-      g1=gps[i].copy
-      g0=g0.union(g1)
+    if duplicate
+      g0=gps[0].copy
+    else
+      g0=gps[0]
     end
-    
-    return g0
-  end
+    for i in 1..gps.size-1
+      # p "joining gps. i=#{i} gps[0]=#{gps[0]} g0=#{g0} "
+      if duplicate
+        g1=gps[i].copy
+      else
+        g1=gps[i]
+      end
+      u=g0.union(g1)
+      g0=u if u != nil
+    end
+
+  return g0
+end
 
   def ArchUtil.intersect(g1,g2,container)
     result=g1.entities.intersect_with(
@@ -383,6 +408,12 @@ module ArchUtil
       m=getMaterial(name)
       m=mats.add name if m == nil
       return m
+    end
+  end
+
+  def ArchUtil.remove_ents(ents)
+    for i in 0..ents.size-1
+      ents[i].erase! if ents[i]!=nil and ents[i].valid?
     end
   end
 
