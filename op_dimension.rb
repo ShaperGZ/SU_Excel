@@ -122,6 +122,7 @@ class Op_Dimension
     # create the objects
     geos=[]
     curr=0
+
     if groupped
       container=container.entities.add_group
     end

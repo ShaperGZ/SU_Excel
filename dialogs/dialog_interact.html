@@ -12,7 +12,7 @@
             window.location = "skp:def_reload@";
         }
         function get_items(){
-            var result=["bd_width","bd_depth","bd_height","apt_lift_count","un_width"]
+            var result=["bd_width","bd_depth","bd_height","apt_lift_count","un_width","un_prototype"]
             return result
         }
         function testSetVal(){
@@ -24,6 +24,8 @@
         function unit_mode(){
             window.location = "skp:unit_mode@";
         }
+
+
 
         function update_all(){
             items=get_items();
@@ -64,10 +66,15 @@
     </table>
     <table>
         <tbody>
-        <tr>
-            <td><span class ="text'">bd_area</span></td>
-            <td><input id="bd_area" type="text" class="text"></td>
-        </tr>
+            <tr>
+                <td><span class ="text'">bd_area</span></td>
+                <td><input id="bd_area" type="text" class="text"></td>
+            </tr>
+            <tr>
+                <td><span class ="text'">un_proto</span></td>
+                <td><select id="un_prototype" style=" width:150px">
+                </select></td>
+            </tr>
             <tr>
                 <td><span class ="text'">bd_width</span></td>
                 <td><input id="bd_width" type="text" class="text"></td>

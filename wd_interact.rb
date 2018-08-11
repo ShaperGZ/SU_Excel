@@ -24,11 +24,14 @@ class  WD_Interact < SUExcel::WebDialogWrapper
     @subjectBB=nil
     @subjectIT=nil
     @dlg=nil
+
   end
 
 
   def open()
     return if @visible
+    Definitions.load()
+
     @dlg = UI::WebDialog.new("AttributeInfo", true, "Information", 739, 641, 150, 300, true)
     file = File.join(__dir__,"/dialogs/dialog_interact.html")
     @dlg.set_file(file)
@@ -41,6 +44,11 @@ class  WD_Interact < SUExcel::WebDialogWrapper
     @dlg.add_action_callback("update_all"){|dialog,params|update_all(params)}
     @dlg.add_action_callback("def_reload"){|dialog,params|def_reload(params)}
     @visible=true
+
+    #assign slection manuals
+    # @dlg.execute_script("document.getElementById('id2').options.add(new Option('#{c}','#{c}'))")
+    fill_dgl_unit_prototypes()
+
     onSelectionBulkChange(Sketchup.active_model.selection)
   end
 
@@ -66,6 +74,29 @@ class  WD_Interact < SUExcel::WebDialogWrapper
     @subjectIT=@subjectBB.get_updator_by_type(BH_Interact)
     @subjectIT.set_dlg(@dlg)
     @subjectIT.update_dialog_data()
+
+    fill_dgl_unit_prototypes()
+  end
+
+
+  def fill_dgl_unit_prototypes()
+    htl_rm=[]
+    Definitions.defs.keys.each{|k|
+     if k.include?("htl_rm_")
+       htl_rm<<k
+       @dlg.execute_script("document.getElementById('un_prototype').options.add(new Option('#{k}','#{k}'))")
+     end
+    }
+
+    proto=@subjectGP.get_attribute("BuildingBlock","un_prototype")
+    if proto == nil
+      @subjectGP.set_attribute("BuildingBlock","un_prototype",htl_rm[0]) if @subjectGP!=nil
+    else
+
+    end
+
+    #assign default
+    #
   end
 
   def normal_mode()
@@ -102,6 +133,8 @@ class  WD_Interact < SUExcel::WebDialogWrapper
   end
 
   def update_all(params)
+    # some of the params are string params while most others are numeric
+    str_params={"un_prototype"=>[]}
     p "update all attr from wd message= #{params}"
     gp=@subjectGP
     trunks=params.split(',')
@@ -109,7 +142,12 @@ class  WD_Interact < SUExcel::WebDialogWrapper
       pair_items=pair.split(':')
       key=pair_items[0]
       val=pair_items[1]
-      gp.set_attribute("BuildingBlock",key,_convert_num_param(val))
+
+      if str_params.keys.include? key
+        gp.set_attribute("BuildingBlock",key,val)
+      else
+        gp.set_attribute("BuildingBlock",key,_convert_num_param(val))
+      end
     }
 
     w=gp.get_attribute("BuildingBlock","bd_width")
@@ -121,8 +159,8 @@ class  WD_Interact < SUExcel::WebDialogWrapper
       bd=BuildingBlock.created_objects[gp]
       bd.invalidate()
     end
-
   end
+
 
   def def_reload(param)
     p "loading definition..."

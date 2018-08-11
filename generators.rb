@@ -68,6 +68,9 @@ module Generators
         size[i]=size[i].m
       end
 
+      unit_size=get_un_proto_size()
+      p "unit size = #{unit_size}"
+
       # 2. generate spaces
       circulation_w=2.m
       pos=[]
@@ -110,6 +113,18 @@ module Generators
       for i in 0..pos.size-1
         create_geometry("level1",pos[i],sizes[i],types[i])
       end
+    end
+
+    def get_un_proto_size()
+      val = @host.host.attr("un_prototype")
+      if val == nil
+        return [3,9]
+      end
+      trunks = val.split('_')
+      str_size = trunks[2].split('x')
+      sx = str_size[0].to_f
+      sy = str_size[1].to_f
+      return [sx,sy]
     end
 
   end
@@ -471,19 +486,19 @@ module Generators
       # area = _join_area(objs)
       @host.gp.set_attribute("BuildingBlock","bd_area",area.round(2))
 
-      service_obj=[]
+      service_objs=[]
       pure_objs.each{|o|
         if o.valid?
           t=o.get_attribute("BuildingComponent","type")
           if t !=nil and t!="occupy"
-            service_obj<<o
+            service_objs<<o
           end
         end
       }
 
-      service_obj+=def_ents
-      service_obj=ArchUtil.copy_entities(service_obj)
-      service_area,merged_srv=_join_area(service_obj, @host.gp)
+      service_objs+=def_ents
+      service_objs=ArchUtil.copy_entities(service_objs)
+      service_area,merged_srv=_join_area(service_objs, @host.gp)
       efficiency=(area-service_area)/area
       p "area=#{area.to_s} service_area=#{service_area}"
       # p "efficiency="+efficiency.to_s
@@ -491,12 +506,12 @@ module Generators
       @host.gp.set_attribute("BuildingBlock","grade_efficiency",efficiency.round(2))
 
       # clear trash
-      trash<<merged
-      trash<<merged_srv
-      trash+=def_ents
-      trash+=area_objs
-      trash+=service_objs
-      ArchUtil.remove_ents( trash )
+      @trash<<merged
+      @trash<<merged_srv
+      @trash+=def_ents
+      @trash+=area_objs
+      @trash+=service_objs
+      ArchUtil.remove_ents( @trash )
     end
 
     def gen_cuts(merged)

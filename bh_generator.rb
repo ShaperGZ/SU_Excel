@@ -47,7 +47,7 @@ class BH_Generator < Arch::BlockUpdateBehaviour
     p "entities remain: #{objs.size}"
   end
 
-  def invalidate(forced=false)
+  def invalidate(forced=true)
     if @invalidated or forced
       clear_spaces()
       (1..3).each{|i| @generators["level#{i}"].values.each{|g| g.generate}}
