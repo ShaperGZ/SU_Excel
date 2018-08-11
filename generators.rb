@@ -450,9 +450,11 @@ module Generators
   class Gen_Area < SpatialGenerator
     def initialize(host)
       @host=host
+      @trash=[]
     end
 
     def generate()
+      @trash=[]
       host=@host
       pure_objs=host.get_spaces("level1")
       pure_objs+=host.get_spaces("level2")
@@ -464,7 +466,7 @@ module Generators
 
       area_objs=pure_objs+def_ents
       area_objs = ArchUtil.copy_entities(area_objs)
-      area = _join_area(area_objs, @host.gp)
+      area,merged = _join_area(area_objs, @host.gp)
 
       # area = _join_area(objs)
       @host.gp.set_attribute("BuildingBlock","bd_area",area.round(2))
@@ -481,16 +483,27 @@ module Generators
 
       service_obj+=def_ents
       service_obj=ArchUtil.copy_entities(service_obj)
-      service_area=_join_area(service_obj, @host.gp)
+      service_area,merged_srv=_join_area(service_obj, @host.gp)
       efficiency=(area-service_area)/area
       p "area=#{area.to_s} service_area=#{service_area}"
       # p "efficiency="+efficiency.to_s
 
       @host.gp.set_attribute("BuildingBlock","grade_efficiency",efficiency.round(2))
 
-      ArchUtil.remove_ents( def_ents )
-      ArchUtil.remove_ents( area_objs )
-      ArchUtil.remove_ents( service_obj )
+      # clear trash
+      trash<<merged
+      trash<<merged_srv
+      trash+=def_ents
+      trash+=area_objs
+      trash+=service_objs
+      ArchUtil.remove_ents( trash )
+    end
+
+    def gen_cuts(merged)
+
+      #create cut planes
+      #
+
     end
 
     # get groups and instances from within a group
@@ -535,8 +548,8 @@ module Generators
 
       #dup.transformation = Geom::Transformation.translation([200.m,0,0])
       unscaled.erase!
-      dup.erase!
-      return area
+      # dup.erase!
+      return area,dup
     end
 
 

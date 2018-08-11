@@ -1,4 +1,4 @@
-load 'D:\sketchupRuby\load\test.rb'
+# load 'D:\sketchupRuby\load\test.rb'
 class BH_Apt_FaceConstraint < Arch::BlockUpdateBehaviour
   #TODO:
   # export attributes:
