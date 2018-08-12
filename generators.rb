@@ -4,6 +4,41 @@ module Generators
     attr_accessor :host
     def initialize(host)
       @host=host
+      @gp=@host.host.gp
+      @enable=true
+      p "on initialize gp=#{@gp}"
+      @generated_objs=[]
+    end
+
+
+    def enable(flag=true)
+      p "SpatialGenerator.enable = #{flag}"
+      if @enable == flag
+        return
+      end
+      if @generated_objs!=nil and @generated_objs.size>0
+        @generated_objs.each{|o|
+          if o!=nil and o.valid?
+            if flag
+              o.hidden=false if o.hidden
+            else
+              o.hidden=true
+            end
+          end
+        }
+      end
+      @enable=flag
+    end
+
+    def clear_generated()
+      if @generated_objs!=nil and @generated_objs.size>0
+        @generated_objs.each{|o|
+          if o!=nil and o.valid?
+            o.erase!
+          end
+        }
+      end
+      @generated_objs=[]
     end
 
     def generate()
@@ -49,7 +84,47 @@ module Generators
       @host.spaces[level]<<comp
       return comp
     end
+
+    def attr(key)
+      return @host.host.attr(key)
+    end
+
+    def get_bd_size()
+      w=attr("bd_width")
+      d=attr("bd_depth")
+      h=attr("bd_height")
+      return [w,d,h]
+    end
+
+    def get_unit_size()
+      val = @host.host.attr("un_prototype")
+      if val == nil
+        return [3,9]
+      end
+      trunks = val.split('_')
+      str_size = trunks[2].split('x')
+      sx = str_size[0].to_f
+      sy = str_size[1].to_f
+      return [sx,sy]
+    end
+    def get_inverse_scale()
+      sx=@gp.transformation.xscale
+      sy=@gp.transformation.yscale
+      sz=@gp.transformation.zscale
+
+      return [1.0/sx, 1.0/sy, 1.0/sz]
+
+    end
+    def get_scale()
+      sx=@gp.transformation.xscale
+      sy=@gp.transformation.yscale
+      sz=@gp.transformation.zscale
+
+      return [sx,sy,sz]
+
+    end
   end
+
 
 
   class Gen_Apt_Straight < SpatialGenerator
@@ -132,7 +207,7 @@ module Generators
 
   class Gen_Cores < SpatialGenerator
     def initialize(host)
-      @host=host
+      super(host)
     end
 
     def generate()
@@ -323,10 +398,12 @@ module Generators
 
   class Gen_Units < SpatialGenerator
     def initialize(host)
-      @host=host
+      super(host)
+
     end
 
     def generate()
+      return if not @enable
       model= Sketchup.active_model
       model.start_operation('gen units')
 
@@ -339,24 +416,43 @@ module Generators
     end
 
     def gen_units(occupy)
+      clear_generated()
 
+      unit_size=get_unit_size
+      bd_size=get_bd_size
+      unit_prototype=attr("un_prototype")
 
-      # size=Op_Dimension.get_size(occupy, @host.gp)
-      # ftfhs=@host.host.attr("bd_ftfhs")
-      # bays=[@host.host.attr("un_width")]
-      # levels=Op_Dimension.divide_length(occupy,ftfhs,2, true, @host.gp,@host.gp)
-      # objs=[]
-      # for i in 0..levels.size-1
-      #   l=levels[i]
-      #   objs+=Op_Dimension.divide_length(l,bays,0, true, @host.gp,@host.gp)
-      #   l.erase!
-      # end
-      #
-      #
-      # objs.each{|o|
-      #
-      #   add_geometry("level2",o,"room_unit")
-      # }
+      container=@gp.entities.add_group
+
+      proto=Definitions.instantiate(container,unit_prototype,Geom::Transformation.new)
+
+      unit_count_w=(bd_size[0] / unit_size[0]).round
+      for i in 0..unit_count_w-1
+        offset=Geom::Vector3d.new(i*unit_size[0].m,0,0)
+        dup=proto.copy
+        if i%2 == 0
+          offset[0]+=unit_size[0].m
+          dup.transformation *= Geom::Transformation.translation(offset)
+          ArchUtil.scale_3d(dup,[-1,1,1])
+        else
+          dup.transformation *= Geom::Transformation.translation(offset)
+        end
+      end
+
+      iscales=get_inverse_scale
+      scales=get_scale
+      org=@gp.local_bounds.min
+      offset=Geom::Vector3d.new(org.x,org.y,(bd_size[2]).m/scales[2])
+      container.transformation *= Geom::Transformation.translation(offset)
+      ArchUtil.scale_3d(container,iscales)
+      container_dup=container.copy
+      ArchUtil.scale_3d(container_dup,[1,-1,1])
+      offset=Geom::Vector3d.new(0,-((2*unit_size[1].m)+2.m),0)
+      container_dup.transformation *= Geom::Transformation.translation(offset)
+      proto.erase!
+
+      @generated_objs<<container
+      @generated_objs<<container_dup
     end
   end
 
@@ -436,7 +532,7 @@ module Generators
 
   class Decompose_F_STR < SpatialGenerator
     def initialize(host)
-      @host=host
+      super(host)
     end
 
     def generate()
@@ -464,7 +560,7 @@ module Generators
 
   class Gen_Area < SpatialGenerator
     def initialize(host)
-      @host=host
+      super(host)
       @trash=[]
     end
 

@@ -24,7 +24,7 @@ class  WD_Interact < SUExcel::WebDialogWrapper
     @subjectBB=nil
     @subjectIT=nil
     @dlg=nil
-
+    @htl_rm=[]
   end
 
 
@@ -69,48 +69,56 @@ class  WD_Interact < SUExcel::WebDialogWrapper
       return
     end
 
+    p "selected a smart object #{entity}"
     @subjectGP=entity
     @subjectBB=BuildingBlock::created_objects[entity]
     @subjectIT=@subjectBB.get_updator_by_type(BH_Interact)
     @subjectIT.set_dlg(@dlg)
     @subjectIT.update_dialog_data()
 
-    fill_dgl_unit_prototypes()
+    fill_dgl_unit_prototypes(false)
+    #set_un_prototype()
   end
 
 
-  def fill_dgl_unit_prototypes()
-    htl_rm=[]
+  def fill_dgl_unit_prototypes(fill_html=true)
+    return if @subjectGP == nil
+    @htl_rm=[]
     Definitions.defs.keys.each{|k|
      if k.include?("htl_rm_")
-       htl_rm<<k
+       p "recognizing #{k}"
+       @htl_rm<<k
        @dlg.execute_script("document.getElementById('un_prototype').options.add(new Option('#{k}','#{k}'))")
      end
     }
+    set_un_prototype()
 
-    proto=@subjectGP.get_attribute("BuildingBlock","un_prototype")
-    if proto == nil
-      @subjectGP.set_attribute("BuildingBlock","un_prototype",htl_rm[0]) if @subjectGP!=nil
-    else
-
-    end
 
     #assign default
     #
   end
 
+  def set_un_prototype()
+    proto=@subjectGP.get_attribute("BuildingBlock","un_prototype")
+    if proto == nil
+      @subjectGP.set_attribute("BuildingBlock","un_prototype",@htl_rm[0]) if @subjectGP!=nil
+    else
+      #todo set html value
+    end
+  end
+
   def normal_mode()
     p 'switching to normal mode'
     return if @subjectGP==nil or @subjectBB ==nil
-    display_mode=@subjectBB.get_updator_by_type(BH_Apt_DisplayMode)
-    display_mode.show(false) if display_mode != nil
+    generator=@subjectBB.get_updator_by_type(BH_Generator)
+    generator.enable(Generators::Gen_Units,true,level="level2")
   end
 
   def unit_mode()
     p 'switching to unit mode'
     return if @subjectGP==nil or @subjectBB ==nil
-    display_mode=@subjectBB.get_updator_by_type(BH_Apt_DisplayMode)
-    display_mode.show() if display_mode != nil
+    generator=@subjectBB.get_updator_by_type(BH_Generator)
+    generator.enable(Generators::Gen_Units,false,level="level2")
   end
 
   def update_attr(params)
@@ -155,10 +163,13 @@ class  WD_Interact < SUExcel::WebDialogWrapper
     h=gp.get_attribute("BuildingBlock","bd_height")
     size=[w,d,h]
     update=BH_Interact.set_bd_size(gp,size)
-    if not update
-      bd=BuildingBlock.created_objects[gp]
-      bd.invalidate()
-    end
+
+    bd=@subjectBB
+    bd.invalidate()
+    # if not update
+    #   bd=BuildingBlock.created_objects[gp]
+    #   bd.invalidate(true)
+    # end
   end
 
 

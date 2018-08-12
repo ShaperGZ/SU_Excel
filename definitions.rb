@@ -15,13 +15,13 @@ class Definitions
 
   def self.reload(path=nil)
     @@defs=Hash.new
-    load(path)
+    load(path,true)
     @@loaded=true
   end
 
-  def self.load(path=nil)
+  def self.load(path=nil, forced=false)
     p "1 loading def"
-    return if @@loaded
+    return if @@loaded and not forced
     p "2 loading def"
     path=SUExcel.get_file_path("/generator_components") if path==nil
     files=Dir[path+"/*.skp"]
@@ -31,6 +31,15 @@ class Definitions
       @@defs[name]=d
     }
     @@loaded=true
+  end
+
+  def self.instantiate(conatiner,key,transformation)
+
+    d=@@defs[key]
+    p "@@defs=#{@@defs} defs.size=#{@@defs.size} d=#{d} key=#{key}"
+    o=conatiner.entities.add_instance(d,Geom::Transformation.new)
+    o.transformation=transformation
+    return o
   end
 
 end

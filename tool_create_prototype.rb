@@ -5,6 +5,7 @@ module Prototyping
   class CreatePrototype
     def initialize()
       super
+      Definitions.load()
       activate
     end
     def activate

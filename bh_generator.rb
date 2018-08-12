@@ -28,6 +28,16 @@ class BH_Generator < Arch::BlockUpdateBehaviour
     return @host.gp
   end
 
+  def enable(type_name,flag,level="level2")
+    p "bh_generator.enable"
+    generators[level].each{|g|
+      if g.class == type_name
+        p "bh_generator.enble(..) found class #{type_name}"
+        g.enable(flag)
+      end
+    }
+  end
+
   def clear_spaces()
     @spaces_keys.each{|k| @spaces[k].each{|g| g.erase! if g.valid?}}
     @spaces_keys.each{|k| @spaces[k] = []}
@@ -35,7 +45,7 @@ class BH_Generator < Arch::BlockUpdateBehaviour
 
   def onChangeEntity(e, invalidated)
     p "-->BH_Generator.onChangeEntity"
-    return if not invalidated[2]
+    #return if not invalidated[2]
     # TODO: get size, and determine which generator to be used for invalidating
     invalidate(true)
 
