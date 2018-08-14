@@ -128,10 +128,10 @@ end
     # 后面加的括号里的向量是为了拿大个plane
     basePts=[]
     case axis
-    when 0
+    when 1
       indices=[4,5,1,0]
       shift=[1,0,4,5]
-    when 1
+    when 0
       indices=[0,2,6,4]
       shift=[6,4,0,2]
     else
@@ -152,28 +152,51 @@ end
     return basePts
   end
 
-  def ArchUtil.local_cut_face_array(gp, distances, axis=2, gen_face=true)
+  def ArchUtil.local_cut_face_array(gp, distances, axis=2, gen_face=true, container=nil, reverse=false)
     pts=ArchUtil.local_cut_face(gp,axis,false)
+    if axis==2
+      pts.each{|p| p[2]=0}
+    end
     pts_array=[]
     vect=Geom::Vector3d.new(0,0,0)
     vect[axis]=1
+    if reverse
+      reverse=-1
+    else
+      reverse=1
+    end
+
+    scales=[1,1,1]
+    if container != nil
+      scales[0]=container.transformation.xscale
+      scales[1]=container.transformation.yscale
+      scales[2]=container.transformation.zscale
+    end
+
 
     distances.each{|d|
       ipts=pts.clone
       add_vect=vect.clone
-      add_vect.length=d
+      add_vect.length=d / scales[axis]
+      add_vect.length *= reverse
       for i in 0..ipts.size-1
         ipts[i] += add_vect
       end
+      # p "ipts.z=#{ipts[2]} add_vect=#{add_vect}"
       pts_array<<ipts
     }
 
     if gen_face
-      g=Sketchup.active_model.entities.add_group
+      if container != nil
+        g=container.entities.add_group
+      else
+        g=Sketchup.active_model.entities.add_group
+      end
+
       pts_array.each{|pts|
         g.entities.add_face(pts)
       }
-      g.transformation=gp.transformation
+      g.transformation=gp.transformation if container!=gp
       return g
     end
 

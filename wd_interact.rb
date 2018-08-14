@@ -76,14 +76,16 @@ class  WD_Interact < SUExcel::WebDialogWrapper
     @subjectIT.set_dlg(@dlg)
     @subjectIT.update_dialog_data()
 
-    fill_dgl_unit_prototypes(false)
+    fill_dgl_unit_prototypes()
     #set_un_prototype()
   end
 
 
-  def fill_dgl_unit_prototypes(fill_html=true)
+  def fill_dgl_unit_prototypes()
     return if @subjectGP == nil
     @htl_rm=[]
+    # clear the selection tag
+    @dlg.execute_script("document.getElementById('un_prototype').innerHTML = '' ")
     Definitions.defs.keys.each{|k|
      if k.include?("htl_rm_")
        p "recognizing #{k}"
@@ -111,14 +113,14 @@ class  WD_Interact < SUExcel::WebDialogWrapper
     p 'switching to normal mode'
     return if @subjectGP==nil or @subjectBB ==nil
     generator=@subjectBB.get_updator_by_type(BH_Generator)
-    generator.enable(Generators::Gen_Units,true,level="level2")
+    generator.enable(Generators::Gen_Units,false,level="level2")
   end
 
   def unit_mode()
     p 'switching to unit mode'
     return if @subjectGP==nil or @subjectBB ==nil
     generator=@subjectBB.get_updator_by_type(BH_Generator)
-    generator.enable(Generators::Gen_Units,false,level="level2")
+    generator.enable(Generators::Gen_Units,true,level="level2")
   end
 
   def update_attr(params)

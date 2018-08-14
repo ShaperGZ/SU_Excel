@@ -5,6 +5,7 @@ class BH_Generator < Arch::BlockUpdateBehaviour
   # spaces["level1"]
   attr_accessor :spaces
   attr_accessor :invalidated
+  attr_accessor :skip_rest
 
   def initialize(gp,host)
     #p 'f=initialized constrain face'
@@ -14,14 +15,16 @@ class BH_Generator < Arch::BlockUpdateBehaviour
     @spaces = {}
     @spaces_keys.each{|k| @spaces[k] = []}
     @invalidated =true
+    @skip_rest=false
     #--------- finish basic initialization -----------------
 
+    set_generator("level1",Generators::ConstraintSize.new(self))
     set_generator("level1", Generators::Gen_Apt_Straight.new(self))
     set_generator("level1", Generators::Gen_Cores.new(self))
-    # set_generator("level2", Generators::Decompose_FLBF.new(self))
-    # set_generator("level2", Generators::Decompose_F_STR.new(self))
     set_generator("level2", Generators::Gen_Units.new(self))
     set_generator("level2", Generators::Gen_Area.new(self))
+    set_generator("level2", Generators::Gen_Cuts.new(self))
+
   end
 
   def gp()
@@ -29,11 +32,9 @@ class BH_Generator < Arch::BlockUpdateBehaviour
   end
 
   def enable(type_name,flag,level="level2")
-    p "bh_generator.enable"
-    generators[level].each{|g|
-      if g.class == type_name
-        p "bh_generator.enble(..) found class #{type_name}"
-        g.enable(flag)
+    generators[level].each{|k,v|
+      if k == type_name
+        v.enable(flag)
       end
     }
   end
@@ -58,9 +59,15 @@ class BH_Generator < Arch::BlockUpdateBehaviour
   end
 
   def invalidate(forced=true)
+    @skip_rest=false
     if @invalidated or forced
       clear_spaces()
-      (1..3).each{|i| @generators["level#{i}"].values.each{|g| g.generate}}
+      (1..3).each{|i|
+        @generators["level#{i}"].values.each{|g|
+          return if @skip_rest
+          g.generate
+        }
+      }
     end
     @invalidated = false
   end

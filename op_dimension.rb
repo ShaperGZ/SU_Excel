@@ -14,12 +14,46 @@ class Op_Dimension
 
   end
 
+  def self.set_ftfhs(gp)
+    bd_ftfh=gp.get_attribute("BuildingBlock","bd_ftfh")
+    bd_height=gp.get_attribute("BuildingBlock", "bd_height")
 
-  def self.get_size(gp, unscaled_ref=nil, meter=false, round=true)
+    if bd_ftfh.class == Float
+      bd_ftfh=[bd_ftfh]
+    end
+    ftfhs=[]
+
+    # total height
+    tth=bd_height
+    #p "total h =#{tth}"
+    current_H=0
+    counter=0
+    while current_H < tth
+      if counter<bd_ftfh.size
+        ftfh=bd_ftfh[counter]
+      else
+        ftfh = bd_ftfh[-1]
+      end
+      current_H += ftfh
+      ftfhs<<ftfh
+      counter+=1
+    end
+    gp.set_attribute("BuildingBlock","bd_floors",counter)
+    gp.set_attribute("BuildingBlock","bd_ftfhs",ftfhs)
+    return ftfhs
+  end
+
+  def self.get_size(gp, unscaled_ref=nil, meter=false, round=true, hide_ents=true)
     # group=gp
     group=gp.entities.add_group
     gp.entities.each{|e|
       group.entities.add_face(e.vertices) if e.class == Sketchup::Face
+
+      if hide_ents
+        if e.class == Sketchup::Face or e.class == Sketchup::Edge
+          e.hidden=true
+        end
+      end
     }
 
     height = (group.local_bounds.max.z * gp.transformation.zscale).to_m
@@ -150,5 +184,49 @@ class Op_Dimension
     end
     return container if groupped
     return geos
+  end
+
+  def self.round_bd_depth(bd_depth,gp)
+    p_un_depth = gp.get_attribute("p_un_depth")
+    unit_depth_range=[p_un_depth[2],p_un_depth[1]]
+    clt_width=gp.get_attribute("bd_circulation")
+    single_min=unit_depth_range[0]+clt_width
+    single_max=unit_depth_range[1]+clt_width
+    double_min=2*unit_depth_range[0]+clt_width
+    double_max=2*unit_depth_range[1]+clt_width
+
+    d=bd_depth
+    if (d<=single_min)
+      d= single_min
+    elsif d>single_max and d<double_min
+      half=(double_min-single_max)/2.0
+      remain=d-single_max
+      if remain < half
+        d=single_max
+      else
+        d=double_min
+      end
+    elsif d>=double_max
+      d=double_max
+    end
+    offset=d-bd_depth
+    return offset
+  end
+  def self.single_or_double(bd_depth,gp)
+    p_un_depth = gp.get_attribute("BuildingBlock","p_un_depth")
+    unit_depth_range=[p_un_depth[2],p_un_depth[1]]
+    clt_width=gp.get_attribute("BuildingBlock","bd_circulation")
+    single_min=unit_depth_range[0]+clt_width
+    single_max=unit_depth_range[1]+clt_width
+    double_min=2*unit_depth_range[0]+clt_width
+    double_max=2*unit_depth_range[1]+clt_width
+
+    p "Op_Dimension.single_or_double=#{[
+        single_min,single_max,
+        double_min,double_max
+    ]} bd_depth=#{bd_depth}"
+
+    return "single" if bd_depth<double_min
+    return "double"
   end
 end

@@ -12,7 +12,7 @@
             window.location = "skp:def_reload@";
         }
         function get_items(){
-            var result=["bd_width","bd_depth","bd_height","apt_lift_count","un_width","un_prototype"]
+            var result=["bd_width","bd_depth","bd_height","apt_lift_count","un_width","un_depth","un_prototype"]
             return result
         }
         function testSetVal(){
@@ -100,6 +100,10 @@
                 <td><input id="un_width" type="text" class="text"></td>
             </tr>
             <tr>
+                <td><span class ="text'">un_depth</span></td>
+                <td><input id="un_depth" type="text" class="text"></td>
+            </tr>
+            <tr>
                 <td><span class ="text'">apt_lift_count</span></td>
                 <td><input id="apt_lift_count" type="text" class="text"></td>
             </tr>
@@ -152,7 +156,6 @@
 
     var items=get_items()
     for(i =0; i<items.length;i++){
-
         var name=items[i];
         add_listener(name);
     }
