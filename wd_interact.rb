@@ -182,6 +182,7 @@ class  WD_Interact < SUExcel::WebDialogWrapper
   end
 
   def _convert_num_param(val)
+    return nil if val==nil
     trunks=val.split(',')
     if trunks.size==1
       return val.to_f

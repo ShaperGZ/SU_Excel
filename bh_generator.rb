@@ -24,6 +24,7 @@ class BH_Generator < Arch::BlockUpdateBehaviour
     set_generator("level2", Generators::Gen_Units.new(self))
     set_generator("level2", Generators::Gen_Area.new(self))
     set_generator("level2", Generators::Gen_Cuts.new(self))
+    set_generator("level2", Generators::Gen_Scores.new(self))
 
   end
 

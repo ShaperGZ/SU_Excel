@@ -95,6 +95,10 @@ class BuildingBlock < Arch::Block
     }
   end
 
+  def set_attr(key,val)
+    @gp.set_attribute("BuildingBlock",key,val)
+  end
+
   def attr(key)
     return @gp.get_attribute("BuildingBlock",key)
   end

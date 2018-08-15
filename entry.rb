@@ -1,9 +1,11 @@
 require 'sketchup.rb'
 require 'socket'
-require 'win32ole'
 require 'pathname'
 
-require File.expand_path('../excel_manager', __FILE__)
+# commented the following two lines for mac os
+# require 'win32ole'
+# require File.expand_path('../excel_manager', __FILE__)
+#
 require File.expand_path('../arch_util',__FILE__)
 require File.expand_path('../arch_util_apdx_excel',__FILE__)
 require File.expand_path('../arch_util_apdx_face_constraints',__FILE__)

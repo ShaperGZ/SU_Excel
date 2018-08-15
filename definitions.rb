@@ -36,6 +36,8 @@ class Definitions
   # instantiate a definition
   def self.instantiate(conatiner,key,transformation)
     d=@@defs[key]
+    p "------------d.class= #{d.class}"
+    #return nil if d.class != Sketchup::ComponentInstance
     #p "@@defs=#{@@defs} defs.size=#{@@defs.size} d=#{d} key=#{key}"
     o=conatiner.entities.add_instance(d,Geom::Transformation.new)
     o.transformation=transformation

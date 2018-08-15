@@ -101,12 +101,15 @@ module Generators
       if val == nil
         return [3,9]
       end
+      p "pre  split 1 va=#{val}"
       trunks = val.split('_')
       str_size = trunks[2].split('x')
+      p "post split 1"
       sx = str_size[0].to_f
       sy = str_size[1].to_f
       return [sx,sy]
     end
+
     def get_inverse_scale()
       sx=@gp.transformation.xscale
       sy=@gp.transformation.yscale
@@ -197,8 +200,10 @@ module Generators
       if val == nil
         return [3,9]
       end
+      p "pre  split 2"
       trunks = val.split('_')
       str_size = trunks[2].split('x')
+      p "post split 2"
       sx = str_size[0].to_f
       sy = str_size[1].to_f
       return [sx,sy]
@@ -481,18 +486,21 @@ module Generators
       model= Sketchup.active_model
       model.start_operation('gen units')
 
-      raise=15.m
+      raise=0.5.m
       un_size=get_unit_size
       bd_size=get_bd_size
 
-      # ////// generate units ////////////
+      # ////// generate units //////////////////
       occupy= host.get_spaces("level1","occupy")
-      # p "ocuupy.size = #{occupy.size}"
+      # p "occupy.size = #{occupy.size}"
+      room_count=0
+
       for i in 0..occupy.size-1
         c=occupy[i]
         flip=false
         flip =true if i%2!=0
         gen_units(c,flip,raise,bd_size,un_size)
+        room_count += gen_room_counts(c)
       end
       # ////// generate circulation ////////////
       clts= host.get_spaces("level1","clt")
@@ -501,11 +509,26 @@ module Generators
         gen_clt(clt,raise,bd_size,un_size)
       end
 
+      @host.host.set_attr("grade_room_count",room_count)
       model.commit_operation
     end
 
-    def gen_room_counts(wcount)
 
+
+    def gen_room_counts(occupy)
+      flrs=@host.host.attr("bd_floors")
+
+      scales=get_scale
+      diagonal=occupy.bounds.max-occupy.bounds.min
+      size=[1,1,1]
+      for i in 0..2
+        size[i]=diagonal[i] * scales[0]
+      end
+      p "occupy size = #{size[0].to_m}"
+
+      un_size=get_unit_size
+      unit_count_w=(size[0] / un_size[0].m).round
+      return unit_count_w*flrs
     end
 
     def gen_units(occupy, flipY=false,raise=0,bd_size,un_size)
@@ -516,7 +539,10 @@ module Generators
       # p "added container:#{container}"
 
       proto=Definitions.instantiate(container,unit_prototype,Geom::Transformation.new)
-
+      if proto==nil
+        p "please load skp files into the definitions first"
+        return
+      end
       unit_count_w=(bd_size[0] / un_size[0]).round
       for i in 0..unit_count_w-1
         offset=Geom::Vector3d.new(i*un_size[0].m,0,0)
@@ -708,9 +734,7 @@ module Generators
       area_objs=pure_objs+def_ents
       area_objs = ArchUtil.copy_entities(area_objs)
       area,merged = _join_area(area_objs, @host.gp)
-
-      # area = _join_area(objs)
-      @host.gp.set_attribute("BuildingBlock","bd_area",area.round(2))
+      flrs=@host.host.attr("bd_floors")
 
       service_objs=[]
       pure_objs.each{|o|
@@ -725,10 +749,14 @@ module Generators
       service_objs+=def_ents
       service_objs=ArchUtil.copy_entities(service_objs)
       service_area,merged_srv=_join_area(service_objs, @host.gp)
+      service_area
       efficiency=(area-service_area)/area
-     # p "area=#{area.to_s} service_area=#{service_area}"
+      # p "area=#{area.to_s} service_area=#{service_area}"
       # p "efficiency="+efficiency.to_s
 
+      @host.gp.set_attribute("BuildingBlock","bd_typical_area",area.round(2))
+      @host.gp.set_attribute("BuildingBlock","bd_typical_net_area",(area-service_area).round(2))
+      @host.gp.set_attribute("BuildingBlock","bd_area",area.round(2)*flrs)
       @host.gp.set_attribute("BuildingBlock","grade_efficiency",efficiency.round(2))
 
       # clear trash
@@ -887,5 +915,28 @@ module Generators
       offset=d-bd_depth
       return offset
     end
+  end
+
+  class Gen_Scores < SpatialGenerator
+    def initialize(host)
+      super(host)
+      @trash=[]
+    end
+
+    def generate()
+      typical=@host.host.attr("bd_typical_area")
+      typical_net=@host.host.attr("bd_typical_net_area")
+      sprinkler=("fr_sprinkler")
+      if sprinkler
+        fire_compartment=3000
+      end
+
+      remain=typical_net%fire_compartment
+      ratio=1-(remain/fire_compartment)
+
+      p "net=#{typical_net} fr_cmp=#{fire_compartment} scaore=#{ratio}"
+
+    end
+
   end
 end

@@ -59,6 +59,7 @@ class Prototype
   attr_accessor :un_width
   attr_accessor :un_depth
   attr_accessor :fc_width
+  @@str_param=["un_prototype"]
 
   def initialize()
     # basic attributes
@@ -72,6 +73,32 @@ class Prototype
     @xvect=Geom::Vector3d.new(@bd_width.value.m,0,0)
     @yvect=Geom::Vector3d.new(0,@bd_depth.value.m,0)
     @zvect=Geom::Vector3d.new(0,0,@bd_height.value.m)
+  end
+
+  def self.read_csv_params_to_gp(gp)
+    str_params=@@str_param
+    path=SUExcel.get_file_path('/Params.csv')
+    params=CSV.read(path)
+    for i in 1..params.size
+      l=params[i]
+      break if l ==nil
+      name=l[1][0..-1]
+      # p "reading #{name} val=#{l[2]}"
+      if gp!=nil
+        if l.size==6
+          gp.set_attribute("BuildingBlock","p_"+name,[l[2].to_f,l[3].to_f,l[4].to_f,l[5].to_f])
+        else
+
+        end
+
+        if str_params.include? name
+          val=l[2]
+        else
+          val=l[2].to_f
+        end
+        gp.set_attribute("BuildingBlock",name,val)
+      end # end if gp!=nil
+    end # end for
   end
 
   def read_csv_params()
@@ -113,23 +140,27 @@ class Prototype
     @bd_depth.set(@yvect.length / $m2inch)
     @bd_height.set(@zvect.length / $m2inch)
 
-    p "bd_width:#{@bd_width.format}"
-    p "bd_depth:#{@bd_depth.format}"
-    p "bd_height:#{@bd_height.format}"
+    Prototype.read_csv_params_to_gp(gp)
+    gp.set_attribute("BuildingBlock","bd_wdith",@bd_width.value)
+    gp.set_attribute("BuildingBlock","bd_depth",@bd_depth.value)
+    gp.set_attribute("BuildingBlock","bd_height",@bd_height.value)
 
-    instance_variables.each{|v|
-      name=v.to_s
-      value = instance_variable_get(name)
-      if value.class == Variable
-        p "name=#{name} val=#{value}"
-        #apt.instance_variable_set(name,value)
-        gp.set_attribute("BuildingBlock","p_"+name[1..-1],[value.value, value.max,value.min,value.step])
-        gp.set_attribute("BuildingBlock",name[1..-1],value.value)
-
-      end
-
-    }
-
+    # p "bd_width:#{@bd_width.format}"
+    # p "bd_depth:#{@bd_depth.format}"
+    # p "bd_height:#{@bd_height.format}"
+    #
+    # instance_variables.each{|v|
+    #   name=v.to_s
+    #   value = instance_variable_get(name)
+    #   if value.class == Variable
+    #     p "name=#{name} val=#{value}"
+    #     #apt.instance_variable_set(name,value)
+    #     gp.set_attribute("BuildingBlock","p_"+name[1..-1],[value.value, value.max,value.min,value.step])
+    #     gp.set_attribute("BuildingBlock",name[1..-1],value.value)
+    #
+    #   end
+    #
+    # }
 
     apt=PrototypeAptBlock.create_or_invalidate(gp,zone="zone1",tower="t1",program="apartment",ftfh=@bd_ftfh.value)
 
